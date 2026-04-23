@@ -1,0 +1,21 @@
+# Dataset e Pesi
+data/
+weights/
+lsun_tools/
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.Python
+env/
+venv/
+.env
+
+# Jupyter
+.ipynb_checkpoints/
+
+# OS
+.DS_Store
+Thumbs.db
