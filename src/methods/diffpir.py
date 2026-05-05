@@ -14,8 +14,10 @@ Algorithm overview:
     2. Data-fidelity step: project x_{t-1} towards consistency with observation y
        x_{t-1} = x_{t-1} - ρ_t · H^T(H·x_{t-1} - y)
 
-The pre-trained model used is the unconditional 256×256 ImageNet diffusion model
-from OpenAI's guided-diffusion repository.
+Pre-trained model: google/ddpm-ema-church-256 (HuggingFace)
+    - Trained on: LSUN Church 256x256 (same domain as this project)
+    - Downloaded automatically on first use via scripts/download_diffpir_model.py
+    - Saved to: weights/ddpm_church_256_unet.pt (~400 MB)
 """
 
 import torch
@@ -187,6 +189,36 @@ class SimpleDenoiser(torch.nn.Module):
         return self.final(d1)
 
 
+class DiffusersUNetWrapper(torch.nn.Module):
+    """
+    Adapter that wraps a HuggingFace diffusers UNet2DModel to match
+    the interface expected by DiffPIR: forward(x, t) -> noise_pred.
+
+    The diffusers UNet returns an object with a .sample attribute;
+    this wrapper extracts it transparently.
+    """
+
+    def __init__(self, unet):
+        super().__init__()
+        self.unet = unet
+
+    def forward(self, x, t):
+        """
+        Parameters
+        ----------
+        x : torch.Tensor
+            Noisy image, shape (B, 3, H, W), range approximately [-1, 1].
+        t : torch.Tensor
+            Timestep indices, shape (B,).
+
+        Returns
+        -------
+        torch.Tensor
+            Predicted noise, shape (B, 3, H, W).
+        """
+        return self.unet(x, t).sample
+
+
 # ============================================================================
 # DiffPIR solver
 # ============================================================================
@@ -248,29 +280,70 @@ class DiffPIR:
         self.model = self._load_model(model_path)
 
     def _load_model(self, model_path):
-        """Load pre-trained diffusion model or create SimpleDenoiser."""
-        if model_path is not None and Path(model_path).exists():
-            # Try to load guided-diffusion model
-            try:
-                checkpoint = torch.load(model_path, map_location=self.device)
-                # If it's a guided-diffusion checkpoint, you'd need to build
-                # the model architecture first. This is a simplified version.
-                model = SimpleDenoiser(in_channels=3, base_channels=128)
-                model.load_state_dict(checkpoint, strict=False)
-                print(f"Loaded model from {model_path}")
-            except Exception as e:
-                print(f"Warning: Could not load {model_path}: {e}")
-                print("Using SimpleDenoiser instead.")
-                model = SimpleDenoiser(in_channels=3, base_channels=128)
-        else:
-            if model_path is not None:
-                print(f"Warning: Model path {model_path} not found.")
-            print("Using built-in SimpleDenoiser (for best results, use a pre-trained model).")
-            model = SimpleDenoiser(in_channels=3, base_channels=128)
+        """
+        Load the pre-trained DDPM denoiser.
 
-        model = model.to(self.device)
-        model.eval()
-        return model
+        Priority:
+          1. model_path explicitly provided and exists → load it
+          2. weights/ddpm_church_256_unet.pt exists → load it
+          3. Neither found → auto-download via scripts/download_diffpir_model.py
+          4. Download fails → fall back to untrained SimpleDenoiser
+        """
+        # Default weight path
+        project_root = Path(__file__).parent.parent.parent
+        default_path = project_root / "weights" / "ddpm_church_256_unet.pt"
+
+        target_path = Path(model_path) if model_path else default_path
+
+        # Auto-download if not present
+        if not target_path.exists():
+            print(f"[DiffPIR] Model not found at {target_path}")
+            print("[DiffPIR] Auto-downloading google/ddpm-ema-church-256...")
+            try:
+                download_script = project_root / "scripts" / "download_diffpir_model.py"
+                import importlib.util
+                spec = importlib.util.spec_from_file_location("download_diffpir_model", download_script)
+                dl_mod = importlib.util.module_from_spec(spec)
+                spec.loader.exec_module(dl_mod)
+                dl_mod.download_model()
+            except Exception as e:
+                print(f"[DiffPIR] Download failed: {e}")
+                print("[DiffPIR] Falling back to untrained SimpleDenoiser (results will be poor).")
+                model = SimpleDenoiser(in_channels=3, base_channels=128).to(self.device)
+                model.eval()
+                return model
+
+        # Load UNet weights into diffusers UNet2DModel
+        try:
+            from diffusers import UNet2DModel
+            print(f"[DiffPIR] Loading model from {target_path}...")
+            state_dict = torch.load(target_path, map_location=self.device, weights_only=True)
+            unet = UNet2DModel(
+                sample_size=256,
+                in_channels=3,
+                out_channels=3,
+                layers_per_block=2,
+                block_out_channels=(128, 128, 256, 256, 512, 512),
+                down_block_types=(
+                    "DownBlock2D", "DownBlock2D", "DownBlock2D",
+                    "DownBlock2D", "AttnDownBlock2D", "DownBlock2D",
+                ),
+                up_block_types=(
+                    "UpBlock2D", "AttnUpBlock2D", "UpBlock2D",
+                    "UpBlock2D", "UpBlock2D", "UpBlock2D",
+                ),
+            )
+            unet.load_state_dict(state_dict)
+            model = DiffusersUNetWrapper(unet).to(self.device)
+            model.eval()
+            print("[DiffPIR] Model loaded successfully.")
+            return model
+        except Exception as e:
+            print(f"[DiffPIR] Could not load model: {e}")
+            print("[DiffPIR] Falling back to untrained SimpleDenoiser.")
+            model = SimpleDenoiser(in_channels=3, base_channels=128).to(self.device)
+            model.eval()
+            return model
 
     @torch.no_grad()
     def restore(self, degraded_img):
@@ -310,7 +383,7 @@ class DiffPIR:
             sqrt_recipm1 = _extract(self.params['sqrt_recipm1_alphas_cumprod'],
                                     t_tensor, x_t.shape, self.device)
             x0_pred = sqrt_recip * x_t - sqrt_recipm1 * noise_pred
-            x0_pred = torch.clamp(x0_pred, 0.0, 1.0)
+            x0_pred = torch.clamp(x0_pred, -1.0, 1.0)
 
             # --- Step 2: Data-fidelity step (DiffPIR core) ---
             # Compute rho_t: decreasing data-fidelity weight across timesteps
@@ -327,7 +400,7 @@ class DiffPIR:
 
             # Apply data-fidelity correction to x0 estimate
             x0_corrected = x0_pred - rho_t * grad_data
-            x0_corrected = torch.clamp(x0_corrected, 0.0, 1.0)
+            x0_corrected = torch.clamp(x0_corrected, -1.0, 1.0)
 
             # --- Step 3: Compute x_{t-1} from corrected x0 ---
             if i < len(self.timestep_seq) - 1:
@@ -343,7 +416,8 @@ class DiffPIR:
                 # Last step: just use the corrected x0
                 x_t = x0_corrected
 
-        return x_t.squeeze(0)
+        # Convert back to [0, 1] before returning
+        return ((x_t.squeeze(0) + 1.0) / 2.0).clamp(0.0, 1.0)
 
     def _forward(self, x):
         """Apply forward degradation H (blur + downsampling)."""
@@ -393,6 +467,9 @@ class DiffPIR:
 
         img = default_normalizer.normalize(img)
         img = img.float().to(self.device)
+
+        # Convert [0, 1] to [-1, 1] for diffusion model compatibility
+        img = img * 2.0 - 1.0
 
         if img.ndim == 3:
             img = img.unsqueeze(0)

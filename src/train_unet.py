@@ -195,7 +195,7 @@ def main(args):
     criterion = nn.L1Loss()  # L1 preserves details better than MSE
     optimizer = torch.optim.Adam(model.parameters(), lr=args.lr, weight_decay=1e-5)
     scheduler = ReduceLROnPlateau(optimizer, mode='min', factor=0.5,
-                                   patience=5, verbose=True)
+                                   patience=5)
 
     # Training history
     history = {
