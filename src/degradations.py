@@ -15,6 +15,14 @@ from PIL import Image
 import numpy as np
 from pathlib import Path
 
+import sys
+import os
+sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+try:
+    from normalization import default_normalizer
+except ImportError:
+    from src.normalization import default_normalizer
+
 
 class DegradationOperator:
     """
@@ -62,16 +70,17 @@ class DegradationOperator:
         
         # Convert input to tensor if needed
         if isinstance(img_tensor, Image.Image):
-            img_tensor = torch.from_numpy(np.array(img_tensor)).float() / 255.0
+            img_tensor = torch.from_numpy(np.array(img_tensor)).float()
             # Convert (H, W, C) -> (C, H, W)
             if len(img_tensor.shape) == 3:
                 img_tensor = img_tensor.permute(2, 0, 1)
         elif isinstance(img_tensor, np.ndarray):
             img_tensor = torch.from_numpy(img_tensor).float()
-            if img_tensor.max() > 1.0:
-                img_tensor = img_tensor / 255.0
             if len(img_tensor.shape) == 3 and img_tensor.shape[2] in [3, 4]:
                 img_tensor = img_tensor.permute(2, 0, 1)
+                
+        # Applica la normalizzazione ufficiale [0, 1]
+        img_tensor = default_normalizer.normalize(img_tensor)
         
         # Ensure tensor is float and on correct device
         img_tensor = img_tensor.float().to(self.device)
