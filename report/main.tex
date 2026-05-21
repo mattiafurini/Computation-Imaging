@@ -1,0 +1,105 @@
+\documentclass[10pt,journal,compsoc]{IEEEtran}
+
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage[italian,english]{babel} % La lingua principale è l'inglese per paper scientifici, ma puoi scambiare con l'italiano se la prof lo richiede
+\usepackage{graphicx}
+\usepackage{amsmath,amssymb,amsfonts}
+\usepackage{algorithmic}
+\usepackage{graphicx}
+\usepackage{textcomp}
+\usepackage{xcolor}
+\usepackage{booktabs}
+\usepackage{hyperref}
+
+\begin{document}
+
+\title{Computational Imaging: Super-resolution via Variational, End-to-End, and Generative Methods}
+
+\author{Mattia Furini, [Nome del tuo Collega]
+\IEEEcompsocitemizethanks{
+\IEEEcompsocthanksitem M. Furini and [Collega] are with the [Name of University/Department].\protect\\
+E-mail: \{mattia.furini, collega.email\}@studio.unibo.it
+}
+}
+
+\markboth{Computational Imaging Project, Group I, May 2026}%
+{Furini \MakeLowercase{\textit{et al.}}: Super-resolution Project}
+
+\IEEEtitleabstractindextext{%
+\begin{abstract}
+In this report, we tackle the problem of image super-resolution on the LSUN Church dataset. The task is formulated as an inverse problem where degraded low-resolution observations (with scaling factors of 2 and 4, and noise levels of 0.005 and 0.01) are mapped back to high-quality 256x256 reconstructions. To understand and critically compare different methodological families, we implemented and evaluated three distinct approaches: a classical Variational method using Total Variation (TV) regularization, an End-to-End Deep Learning approach based on the U-Net architecture, and a zero-shot Generative prior method using Denoising Diffusion Models for Plug-and-Play Image Restoration (DiffPIR). We present a comprehensive quantitative and qualitative comparison of these methods, discussing their specific parameter choices, computational trade-offs, and resulting artifacts.
+\end{abstract}
+
+\begin{IEEEkeywords}
+Computational Imaging, Super-resolution, Total Variation, U-Net, Diffusion Models, DiffPIR.
+\end{IEEEkeywords}}
+
+\maketitle
+\IEEEdisplaynontitleabstractindextext
+\IEEEpeerreviewmaketitle
+
+\section{Introduction}
+\IEEEPARstart{S}{uper-resolution} is a fundamental inverse problem in computational imaging...
+(Qui introducete il problema della superrisoluzione, perché è difficile, e quali sono i 3 approcci che state per analizzare).
+
+\section{Dataset and Setup}
+In this project, we utilize the LSUN Church dataset...
+(Qui descrivete come avete preprocessato i dati, il resize a 256x256, la normalizzazione e come è stato applicato il forward operator $H$ per ottenere le degradazioni).
+
+\section{Methodology}
+This section describes the three methodological families implemented for solving the inverse problem.
+
+\subsection{Variational Approach: Total Variation (TV)}
+Describe the mathematical formulation of TV regularization...
+Explain how the regularization parameter $\lambda$ was chosen heuristically.
+
+\subsection{End-to-End Deep Learning: U-Net}
+Describe the chosen U-Net architecture, the training process, the loss function used, and any hyperparameter choices...
+
+\subsection{Generative Prior: DiffPIR}
+Describe how DiffPIR utilizes a pre-trained diffusion model as a prior in a plug-and-play framework. Discuss the choice of parameters like the number of sampling steps and the data-fidelity weight ($\rho$).
+
+\section{Results and Comparison}
+\subsection{Quantitative Evaluation}
+Present the PSNR and SSIM tables here for the different degradation settings (SR 2x/4x, noise 0.005/0.01).
+
+\begin{table}[h]
+\centering
+\caption{Quantitative Comparison (PSNR / SSIM)}
+\label{tab:metrics}
+\begin{tabular}{@{}lcccc@{}}
+\toprule
+\textbf{Degradation} & \textbf{Bicubic} & \textbf{TV} & \textbf{UNet} & \textbf{DiffPIR} \\ \midrule
+SR 2x, $\sigma$=0.005 & 27.74 / 0.89 & 31.43 / 0.92 & 29.64 / 0.93 & - / - \\
+SR 2x, $\sigma$=0.010 & 27.62 / 0.87 & 31.25 / 0.92 & 29.36 / 0.90 & - / - \\
+SR 4x, $\sigma$=0.005 & 24.41 / 0.77 & 27.37 / 0.84 & 25.03 / 0.79 & - / - \\
+SR 4x, $\sigma$=0.010 & 24.35 / 0.75 & 27.23 / 0.83 & 24.96 / 0.77 & - / - \\ \bottomrule
+\end{tabular}
+\end{table}
+
+\subsection{Visual Comparison}
+Show your visual plots here. Compare the artifacts: TV might look "blocky" or stair-cased, UNet might look slightly blurred, and DiffPIR might generate hallucinated details but look photorealistic.
+
+% Esempio di inserimento immagine (decommenta e cambia il nome quando hai i plot)
+% \begin{figure*}[!t]
+% \centering
+% \includegraphics[width=\textwidth]{../data/results_comparison.png}
+% \caption{Visual comparison of the reconstructed images across different methods.}
+% \label{fig:comparison}
+% \end{figure*}
+
+\section{Discussion and Limitations}
+Critically compare the strengths and weaknesses of each method...
+(Qui inserite il ragionamento critico richiesto dalla traccia: tempi di esecuzione, necessità di training vs zero-shot, presenza di artefatti vs dettagli fotorealistici).
+
+\section{Conclusion}
+Brief summary of the findings.
+
+\bibliographystyle{IEEEtran}
+\begin{thebibliography}{1}
+\bibitem{zhu2023diffpir}
+Y. Zhu \emph{et al.}, ``Denoising Diffusion Models for Plug-and-Play Image Restoration,'' \emph{CVPR}, 2023.
+\end{thebibliography}
+
+\end{document}
