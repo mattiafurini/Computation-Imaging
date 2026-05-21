@@ -408,10 +408,13 @@ class DiffPIR:
                 t_prev = self.timestep_seq[i + 1]
                 alpha_bar_prev = float(self.params['alphas_cumprod'][t_prev])
 
-                # Re-noise to t-1
-                noise = torch.randn_like(x_t) if t_prev > 0 else torch.zeros_like(x_t)
-                x_t = (math.sqrt(alpha_bar_prev) * x0_corrected +
-                       math.sqrt(1.0 - alpha_bar_prev) * noise)
+                # Use DDIM deterministic step:
+                # x_{t-1} = sqrt(alpha_bar_{t-1}) * x0_corrected + sqrt(1 - alpha_bar_{t-1}) * noise_pred
+                if t_prev > 0:
+                    x_t = (math.sqrt(alpha_bar_prev) * x0_corrected +
+                           math.sqrt(1.0 - alpha_bar_prev) * noise_pred)
+                else:
+                    x_t = x0_corrected
             else:
                 # Last step: just use the corrected x0
                 x_t = x0_corrected
