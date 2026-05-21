@@ -40,25 +40,69 @@ Computational Imaging, Super-resolution, Total Variation, U-Net, Diffusion Model
 \IEEEpeerreviewmaketitle
 
 \section{Introduction}
-\IEEEPARstart{S}{uper-resolution} is a fundamental inverse problem in computational imaging...
-(Qui introducete il problema della superrisoluzione, perché è difficile, e quali sono i 3 approcci che state per analizzare).
+\IEEEPARstart{S}{uper-resolution} (SR) is a fundamental inverse problem in computational imaging, where the objective is to recover a high-resolution (HR) image from a low-resolution (LR) and often noisy observation. This task is inherently ill-posed because a single LR image can theoretically correspond to multiple valid HR images, leading to a loss of high-frequency details during the degradation process. Solving this problem requires the injection of prior knowledge or structural constraints to guide the reconstruction towards a plausible and visually pleasing solution.
+
+In recent years, the field of computational imaging has witnessed a paradigm shift. Classical approaches relied heavily on hand-crafted priors and mathematical regularization, whereas modern techniques increasingly leverage deep learning to learn complex mappings directly from data. More recently, generative models have emerged as powerful tools, offering unprecedented capabilities to hallucinate realistic textures and details.
+
+The objective of this project is to implement, evaluate, and critically compare three distinct methodological families for image super-resolution, understanding their respective strengths, limitations, and underlying assumptions. Specifically, we investigate:
+\begin{enumerate}
+    \item \textbf{A Variational Method:} Total Variation (TV) regularization, which serves as a robust, classical baseline favoring piecewise smooth reconstructions while preserving sharp edges.
+    \item \textbf{An End-to-End Deep Learning Method:} A U-Net architecture trained in a supervised manner to directly map degraded inputs to clean reconstructions, representing data-driven discriminative approaches.
+    \item \textbf{A Generative Prior Method:} Denoising Diffusion Models for Plug-and-Play Image Restoration (DiffPIR) \cite{zhu2023diffpir}, a state-of-the-art zero-shot approach that uses an unconditionally trained diffusion model as a powerful generative prior.
+\end{enumerate}
+
+We apply these methods to the LSUN Church dataset under unified experimental conditions, testing them against various degradation scenarios characterized by different scaling factors and noise levels. By analyzing the quantitative metrics (PSNR and SSIM) alongside a qualitative visual assessment, we aim to provide a comprehensive discussion on the trade-offs between mathematical guarantees, training requirements, computational cost, and perceptual quality.
 
 \section{Dataset and Setup}
-In this project, we utilize the LSUN Church dataset...
-(Qui descrivete come avete preprocessato i dati, il resize a 256x256, la normalizzazione e come è stato applicato il forward operator $H$ per ottenere le degradazioni).
+\subsection{Data Preparation}
+In this project, we utilize the LSUN Church dataset, which provides a rich collection of outdoor architectural scenes suitable for learning complex structural priors. To ensure computational tractability while maintaining a diverse representative sample, we extracted a subset of 4,000 images from the original dataset.
+
+As part of the preprocessing pipeline, all images are center-cropped and resized to a fixed spatial resolution of $256 \times 256$ pixels. The pixel intensities are normalized to the range $[0, 1]$ to stabilize numerical optimization and neural network training. To facilitate the supervised training of the U-Net model and allow for rigorous evaluation, the subset is partitioned into a training set of 3,200 images, a validation set of 400 images, and a test set of 400 images.
+
+\subsection{Degradation Model (Forward Operator)}
+The super-resolution task is mathematically formulated as a linear inverse problem. Let $\mathbf{x} \in \mathbb{R}^{C \times H \times W}$ represent the underlying high-resolution (HR) image. The observation $\mathbf{y} \in \mathbb{R}^{C \times (H/s) \times (W/s)}$ is generated through a forward degradation model defined as:
+\begin{equation}
+    \mathbf{y} = (\mathbf{x} \circledast \mathbf{k})\downarrow_{s} + \mathbf{n}
+\end{equation}
+where $\circledast$ denotes 2D spatial convolution, $\mathbf{k}$ is a blur kernel, $\downarrow_{s}$ represents the decimation (downsampling) operation by a scale factor $s$, and $\mathbf{n}$ is Additive White Gaussian Noise (AWGN) with standard deviation $\sigma_n$.
+
+In our experiments, the blur kernel $\mathbf{k}$ is defined as a Gaussian filter. The kernel size and its standard deviation $\sigma_k$ are dynamically coupled to the chosen scale factor $s$ (specifically, $\sigma_k = s / \sqrt{8 \ln 2}$). 
+We evaluate the reconstruction methods across four distinct degradation scenarios, combining two super-resolution scale factors ($s \in \{2, 4\}$) with two noise levels ($\sigma_n \in \{0.005, 0.01\}$). 
+
+To guarantee a fair and consistent comparative analysis, the exact same degraded inputs $\mathbf{y}$ and corresponding forward operators are fed to all three reconstruction methods (TV, U-Net, and DiffPIR) during the evaluation phase.
 
 \section{Methodology}
-This section describes the three methodological families implemented for solving the inverse problem.
+This section describes the three methodological families implemented for solving the inverse problem: a classical variational approach, a supervised deep learning approach, and a generative zero-shot approach.
 
 \subsection{Variational Approach: Total Variation (TV)}
-Describe the mathematical formulation of TV regularization...
-Explain how the regularization parameter $\lambda$ was chosen heuristically.
+The classical approach to solving ill-posed inverse problems involves formulating an optimization task that balances data fidelity with a regularization term (prior). Total Variation (TV) regularization assumes that natural images exhibit piecewise smooth regions bounded by sharp edges. The reconstruction $\mathbf{\hat{x}}$ is obtained by solving:
+\begin{equation}
+    \mathbf{\hat{x}} = \arg\min_{\mathbf{x}} \frac{1}{2} \| \mathbf{y} - H\mathbf{x} \|_2^2 + \lambda \text{TV}(\mathbf{x})
+\end{equation}
+where $H$ is the forward degradation operator (blur and downsampling), and $\text{TV}(\mathbf{x})$ is the isotropic total variation penalty, defined as the $L_1$ norm of the image gradient magnitude. The regularization parameter $\lambda$ controls the trade-off between smoothing the noise and preserving the data fidelity. In our implementation, $\lambda$ is chosen heuristically based on the noise level $\sigma_n$: higher noise requires a larger $\lambda$ to suppress artifacts, although this may lead to an overly smoothed, "staircase" effect characteristic of TV. The optimization is typically performed using iterative gradient-based solvers.
 
 \subsection{End-to-End Deep Learning: U-Net}
-Describe the chosen U-Net architecture, the training process, the loss function used, and any hyperparameter choices...
+As a representative of data-driven, discriminative methods, we employ a U-Net architecture. Unlike the variational approach, the U-Net does not explicitly use the mathematical formulation of the forward operator $H$ during inference. Instead, it learns a direct mapping $f_\theta: \mathbf{y} \rightarrow \mathbf{x}$ from a large dataset of degraded-clean image pairs.
+
+The U-Net features an encoder-decoder structure with skip connections, which are crucial for recovering fine spatial details lost during the encoding bottleneck. The network parameters $\theta$ are optimized during the training phase by minimizing a loss function (e.g., Mean Squared Error or $L_1$ loss) over the training set:
+\begin{equation}
+    \hat{\theta} = \arg\min_{\theta} \mathbb{E}_{(\mathbf{x}, \mathbf{y})} \left[ \mathcal{L}(f_\theta(\mathbf{y}), \mathbf{x}) \right]
+\end{equation}
+Once trained, inference is extremely fast, requiring only a single forward pass. However, the model's performance is strictly bound to the specific degradation distribution (scale factor and noise) seen during training, lacking the zero-shot flexibility of variational methods.
 
 \subsection{Generative Prior: DiffPIR}
-Describe how DiffPIR utilizes a pre-trained diffusion model as a prior in a plug-and-play framework. Discuss the choice of parameters like the number of sampling steps and the data-fidelity weight ($\rho$).
+To leverage the photorealistic generation capabilities of modern AI without requiring paired training data for each specific degradation, we implemented DiffPIR (Denoising Diffusion Models for Plug-and-Play Image Restoration) \cite{zhu2023diffpir}. DiffPIR utilizes an unconditionally trained diffusion model (in our case, a model pre-trained on the LSUN Church dataset) as a generative prior.
+
+The algorithm operates by interleaving two steps at each timestep $t$ of the reverse diffusion process:
+\begin{enumerate}
+    \item \textbf{Denoising Step (Prior):} The pre-trained diffusion U-Net predicts the noise $\epsilon_\theta(\mathbf{x}_t, t)$, and we estimate the clean image $\hat{\mathbf{x}}_0$ using the standard deterministic DDIM formulation.
+    \item \textbf{Data-Fidelity Step:} To ensure the generated image is consistent with the specific observation $\mathbf{y}$, a gradient descent step is applied:
+    \begin{equation}
+        \mathbf{x}_0^{\text{corrected}} = \hat{\mathbf{x}}_0 - \rho_t \nabla_{\mathbf{x}} \| \mathbf{y} - H\hat{\mathbf{x}}_0 \|_2^2
+    \end{equation}
+    where $\rho_t$ is a timestep-dependent step size that dictates the strength of the data conditioning.
+\end{enumerate}
+Finally, the corrected $\mathbf{x}_0^{\text{corrected}}$ is re-noised to $\mathbf{x}_{t-1}$ to continue the reverse diffusion loop. This approach elegantly combines the explicit physical knowledge of the forward operator $H$ with the unparalleled prior distribution learned by the diffusion model, yielding highly realistic and consistent super-resolved images without task-specific training.
 
 \section{Results and Comparison}
 \subsection{Quantitative Evaluation}
