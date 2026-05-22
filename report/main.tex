@@ -84,7 +84,7 @@ where $H$ is the forward degradation operator (blur and downsampling), and $\tex
 \subsection{End-to-End Deep Learning: U-Net}
 As a representative of data-driven, discriminative methods, we employ a U-Net architecture. Unlike the variational approach, the U-Net does not explicitly use the mathematical formulation of the forward operator $H$ during inference. Instead, it learns a direct mapping $f_\theta: \mathbf{y} \rightarrow \mathbf{x}$ from a large dataset of degraded-clean image pairs.
 
-The U-Net features an encoder-decoder structure with skip connections, which are crucial for recovering fine spatial details lost during the encoding bottleneck. The network parameters $\theta$ are optimized during the training phase by minimizing a loss function (e.g., Mean Squared Error or $L_1$ loss) over the training set:
+Following the foundational concepts introduced in the course, we implemented a classical Baseline U-Net. It features a plain encoder-decoder structure with skip connections, which are crucial for recovering fine spatial details lost during the encoding bottleneck, and intentionally omits residual blocks or attention gates to establish a pure end-to-end reference. The network parameters $\theta$ are optimized during the training phase by minimizing a loss function (e.g., Mean Squared Error or $L_1$ loss) over the training set:
 \begin{equation}
     \hat{\theta} = \arg\min_{\theta} \mathbb{E}_{(\mathbf{x}, \mathbf{y})} \left[ \mathcal{L}(f_\theta(\mathbf{y}), \mathbf{x}) \right]
 \end{equation}
@@ -93,10 +93,10 @@ Once trained, inference is extremely fast, requiring only a single forward pass.
 \subsection{Generative Prior: DiffPIR}
 To leverage the photorealistic generation capabilities of modern AI without requiring paired training data for each specific degradation, we implemented DiffPIR (Denoising Diffusion Models for Plug-and-Play Image Restoration) \cite{zhu2023diffpir}. DiffPIR utilizes an unconditionally trained diffusion model (in our case, a model pre-trained on the LSUN Church dataset) as a generative prior.
 
-The algorithm operates by interleaving two steps at each timestep $t$ of the reverse diffusion process:
+Embracing an operator-splitting philosophy, the algorithm operates by interleaving two distinct steps at each timestep $t$ of the reverse diffusion process, effectively separating the learned image prior from the physical measurement consistency:
 \begin{enumerate}
-    \item \textbf{Denoising Step (Prior):} The pre-trained diffusion U-Net predicts the noise $\epsilon_\theta(\mathbf{x}_t, t)$, and we estimate the clean image $\hat{\mathbf{x}}_0$ using the standard deterministic DDIM formulation.
-    \item \textbf{Data-Fidelity Step:} To ensure the generated image is consistent with the specific observation $\mathbf{y}$, a gradient descent step is applied:
+    \item \textbf{Denoising Step (Prior):} The pre-trained diffusion U-Net predicts the noise $\epsilon_\theta(\mathbf{x}_t, t)$, and we estimate the clean image $\hat{\mathbf{x}}_0$ using a deterministic DDIM formulation. This step pushes the iterate towards the manifold of natural images.
+    \item \textbf{Data-Fidelity Step:} To ensure the generated image remains tethered to the physical observation $\mathbf{y}$, an explicit gradient descent correction is applied:
     \begin{equation}
         \mathbf{x}_0^{\text{corrected}} = \hat{\mathbf{x}}_0 - \rho_t \nabla_{\mathbf{x}} \| \mathbf{y} - H\hat{\mathbf{x}}_0 \|_2^2
     \end{equation}
@@ -134,8 +134,13 @@ Show your visual plots here. Compare the artifacts: TV might look "blocky" or st
 % \end{figure*}
 
 \section{Discussion and Limitations}
-Critically compare the strengths and weaknesses of each method...
-(Qui inserite il ragionamento critico richiesto dalla traccia: tempi di esecuzione, necessità di training vs zero-shot, presenza di artefatti vs dettagli fotorealistici).
+Our comparative analysis highlights fundamental trade-offs between the three methodological families:
+
+\textbf{Variational Methods (TV):} As an optimization-based approach, TV is highly interpretable, requires no training data, and provides strong mathematical guarantees. However, its simplistic prior tends to produce blocky, "staircase" artifacts, failing to recover complex natural textures, especially under severe degradation (e.g., SR 4x).
+
+\textbf{End-to-End Deep Learning (Baseline U-Net):} The U-Net offers extremely fast inference and excellent performance on the specific degradation it was trained on. Nevertheless, it suffers from a lack of flexibility: changing the blur kernel or noise level at test time leads to a significant drop in performance. Furthermore, being trained with pixel-wise losses (like MSE), it tends to produce overly smooth results, struggling to synthesize high-frequency details.
+
+\textbf{Generative Priors (DiffPIR):} DiffPIR excels at generating photorealistic and perceptually convincing details without requiring paired training data, leveraging its zero-shot plug-and-play nature. However, as noted in the theoretical limitations of diffusion priors, this comes at a high computational cost due to the iterative reverse sampling. Furthermore, it introduces the risk of \textit{hallucinations} (plausible but incorrect details) and is highly sensitive to the exact knowledge of the forward operator $H$. If the denoising step dominates the data-consistency step, the method may drift away from the true underlying signal.
 
 \section{Conclusion}
 Brief summary of the findings.
