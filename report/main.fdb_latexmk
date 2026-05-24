@@ -1,7 +1,7 @@
 # Fdb version 4
-["pdflatex"] 1779353205.58332 "/home/mattia/Documents/Computational Imaging/report/main.tex" "main.pdf" "main" 1779353206.08342 0
+["pdflatex"] 1779437615.40475 "/home/mattia/Documents/Computational Imaging/report/main.tex" "main.pdf" "main" 1779437616.33596 0
   "/etc/texmf/web2c/texmf.cnf" 1778069650.44101 475 c0e671620eb5563b2130f56340a5fde8 ""
-  "/home/mattia/Documents/Computational Imaging/report/main.tex" 1779353204.59049 12992 6916fe70720ecf4ed5dc517f582f8e90 ""
+  "/home/mattia/Documents/Computational Imaging/report/main.tex" 1779437614.0723 14741 c0c26802c1bed7846b1d75455f3b3170 ""
   "/usr/share/texlive/texmf-dist/fonts/enc/dvips/base/8r.enc" 1165713224 4850 80dc9bab7f31fb78a000ccfed0e27cab ""
   "/usr/share/texlive/texmf-dist/fonts/map/fontname/texfonts.map" 1577235249 3524 cb3e574dea2d1052e39280babc910dc8 ""
   "/usr/share/texlive/texmf-dist/fonts/tfm/adobe/helvetic/phvb8r.tfm" 1136768653 4484 b828043cbd581d289d955903c1339981 ""
@@ -143,9 +143,9 @@
   "/usr/share/texmf/web2c/texmf.cnf" 1707919699 40399 f2c302f7d2af602abb742093540a5834 ""
   "/var/lib/texmf/fonts/map/pdftex/updmap/pdftex.map" 1778069676.40923 5472669 54eaf61a88b6b7896ebd0dac973cb29c ""
   "/var/lib/texmf/web2c/pdftex/pdflatex.fmt" 1778069759 8213943 54343a1b3e4688928a991b02f022a9ef ""
-  "main.aux" 1779353206.03354 2281 9f866a59578e9c5f7b045011b8d4c1ef "pdflatex"
-  "main.out" 1779353206.03454 2271 9ae18b4c863b1809b0dfb6ae8b5329cf "pdflatex"
-  "main.tex" 1779353204.59049 12992 6916fe70720ecf4ed5dc517f582f8e90 ""
+  "main.aux" 1779437616.24528 2281 bc1ccb0bf9f7d4fb304bfc78080d334b "pdflatex"
+  "main.out" 1779437616.24628 2271 9ae18b4c863b1809b0dfb6ae8b5329cf "pdflatex"
+  "main.tex" 1779437614.0723 14741 c0c26802c1bed7846b1d75455f3b3170 ""
   (generated)
   "main.aux"
   "main.log"
