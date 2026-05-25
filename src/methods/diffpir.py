@@ -408,11 +408,14 @@ class DiffPIR:
                 t_prev = self.timestep_seq[i + 1]
                 alpha_bar_prev = float(self.params['alphas_cumprod'][t_prev])
 
-                # Use DDIM deterministic step:
-                # x_{t-1} = sqrt(alpha_bar_{t-1}) * x0_corrected + sqrt(1 - alpha_bar_{t-1}) * noise_pred
+                # Use DDIM deterministic step with implicit noise:
+                # When x0 is modified by gradient descent, we must recalculate the 
+                # implicit noise to keep the DDIM trajectory consistent.
                 if t_prev > 0:
+                    alpha_bar = float(self.params['alphas_cumprod'][t])
+                    implicit_noise = (x_t - math.sqrt(alpha_bar) * x0_corrected) / math.sqrt(1.0 - alpha_bar)
                     x_t = (math.sqrt(alpha_bar_prev) * x0_corrected +
-                           math.sqrt(1.0 - alpha_bar_prev) * noise_pred)
+                           math.sqrt(1.0 - alpha_bar_prev) * implicit_noise)
                 else:
                     x_t = x0_corrected
             else:
