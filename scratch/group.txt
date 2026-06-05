@@ -1,0 +1,58 @@
+Computational Imaging Group I Project
+Template
+Group I
+Number of students: 2
+1. General Description
+In this project, students are asked to address a computational imaging problem by
+combining different methodological families, in order to understand both classical and
+modern approaches and to critically compare their behavior under the same
+experimental conditions. The goal is not only to obtain good reconstruction results, but
+also to reason about the strengths and limitations of each method.
+2. Dataset
+Dataset to be used: LSUN Church
+Download link: https://github.com/fyu/lsun
+Students are expected to carefully inspect the dataset, understand its structure, and
+define a consistent preprocessing pipeline. This includes normalization, resizing if
+needed, and splitting into training, validation, and testing sets when applicable. Any
+preprocessing choice must be clearly justified and documented.
+3. Task Definition
+Target task: Superresolution
+Consider a subset of about 4000 images of the original dataset. The images
+must be resized to 256x256.
+The task must be formulated as an inverse problem where a degraded observation is
+mapped back to a high-quality reconstruction.
+Parameters of the degradation process:
+SR factor: 2,4
+noise level = 0.005, 0.01
+
+Students must ensure all methods use the same degraded inputs.
+4. Methodological Requirements
+The students are expected to test and compare multiple methods on the same data. In
+particular:
+Variational method: Regularization with TV
+End-to-end method: Select one appropriate method within the following list of
+architectures: UNet, ViT, or NAF-Net. Choose specific architecture and training in
+relation to the task properties.
+Generative method: Diffusion with DiffPIR.
+Hybrid method: Plug and Play in Half Quadratic Splitting (HQS).
+If the group is constituted by only 2 students, they can choose three of the previous
+four methods, by excluding one of the last three (they can also do all the four,
+obviously!).
+Each of the previous methods has it own set of parameters that needs to be chosen,
+e.g. the number of diffusion steps for DPS or the regularization parameter. The students
+are expected to identify the values of such parameters heuristically and discuss the final
+choice, together with a description of how they set them, at the oral presentation.
+5. Deliverables
+During the oral presentation, the students are expected to provide a comparison of the
+tested methods in term of the following:
+Quantitative: PSNR, SSIM.
+Visual: reconstructed images and comparisons.
+In particular, they should include a comparison plot within all methods, a report with
+methods, setup, and discussion.
+Finally, we expect the student to provide a code with documentation, possibly pushed
+on Github whose link should be delivered during the oral presentation.
+During the oral presentation, the students should have a PowerPoint / Beamer
+presentation reporting all the deliverables and the discussion as indicated in the project
+description.
+
+

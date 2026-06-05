@@ -1,0 +1,501 @@
+y δ = Kx∗ + e
+
+K ∈ Rm×n
+x∗
+yδ
+e
+
+x̂ = arg min(D(Kx, y δ ) + R(x))
+x
+
+D(Ax, y)
+→
+
+R(x)
+→
+
+fΘ
+
+y
+
+x̂
+x̂ = fΘ (y δ )
+
+Riassunto modulo 2
+
+1
+
+x̂
+
+(C, H, W )
+
+(B, C, H, W )
+
+uint8
+
+→
+→
+
+→
+→
+
+Dataset
+
+DataLoader
+
+→
+
+Riassunto modulo 2
+
+2
+
+→
+
+→
+→
+
+tensor
+
+H ×W
+(B, C, H, W )
+
+dtype
+
+Riassunto modulo 2
+
+3
+
+float16
+
+z ↦ Wz + b
+
+L(Θ)
+
+∂L(Θ)
+∂Θ
+
+(1, 1, 1, 1)
+.backward()
+
+optim
+SGD
+
+Adam
+
+AdamW
+Module
+
+.parameters()
+
+η
+
+η
+
+optim
+
+Riassunto modulo 2
+
+4
+
+IPPy
+IPPy
+
+float32
+
+float32
+float64
+
+D = {(x(i) , y (i) )}N
+i=1
+x(i) ∈ Rd
+Rd → Rs
+
+y (i) ∈ Rs
+
+fΘ :
+
+Θ
+
+f Θ : Rd → Rs
+
+d=s=1
+fΘ (x) = Θ1 + Θ2 x
+Θ
+
+Riassunto modulo 2
+
+5
+
+→
+⇒
+
+Wl
+
+ρ(t) = max{t, 0}
+
+ρ(t) = max{αt, t}
+
+t
+
+e
+σ(t) = 1+e
+t
+∣t∣
+
+α>0
+
+t
+
+−t
+
+tanh(t) = eet −e
++e−t
+
+ρ(t) = t ⋅ σ(t)
+softmax(z)i = ezi / ∑j ezj
+
+x
+zi = wTi x + bi
+w i bi
+zi
+
+zi ↦ hi = ρ(zi )
+y
+
+Riassunto modulo 2
+
+6
+
+hℓ
+
+fΘ (x(i) )
+
+Θ
+y
+
+(i)
+
+→
+
+Riassunto modulo 2
+
+7
+
+nx × ny
+
+x
+K
+
+k×k
+y =K∗x
+k×k
+
+y
+
+x
+
+k×k
+k−1
+2
+
+Linear
+
+Conv2d
+
+y δ = Kx + e
+yδ
+MSELoss
+
+Riassunto modulo 2
+
+8
+
+−∞
+
++∞
+
+∣xtrue − y δ ∣
+
+kl = 3
+
+Riassunto modulo 2
+
+9
+
+g=
+0, … , G
+
+G+1
+c0
+cg+1 = 2cg ,
+
+Riassunto modulo 2
+
+g = 0, … , G − 1
+
+10
+
+Riassunto modulo 2
+
+11
+
+Riassunto modulo 2
+
+12
+
+PSNR(xtrue , xpred ) = 10 log10 (
+
+ℓL1
+
+MAX2
+)
+MSE(xtrue , xpred )
+
+ℓL1
+ℓ1
+
+ℓ2
+
+ℓL1
+
+Riassunto modulo 2
+
+13
+
+ℓF ourier
+
+ℓF ourier
+
+ℓL1
+ℓF ourier
+ℓL1
+ℓSSIM
+ℓSSIM
+
+ℓSSIM
+
+ℓP erceptual
+
+ℓP erceptual
+ℓP erceptual
+
+ℓL1 , ℓF ourier , ℓSSIM , ℓP erceptual
+
+Riassunto modulo 2
+
+14
+
+ℓCombined
+ℓCombined = λ1 ℓLoss1 + λ2 ℓLoss2 + ⋯ + λK ℓLossK
+ℓLossK
+ℓP erceptual
+λk ≥ 0
+
+yδ
+
+Riassunto modulo 2
+
+ℓL1 , ℓSSIM
+
+~
+x
+
+15
+
+yδ
+x
+yδ
+
+FBP
+
+~ fΘ xpred
+x
+y = Kx
+
+~ = FBP(y δ )
+x
+
+yδ
+xpred
+
+pdata (x)
+
+x ∈ Rn
+
+pdata (x)
+Θ
+pΘ (x)
+
+pΘ
+
+z∈R
+
+d
+
+pdata
+d≪n
+
+z ∼ p(z),
+
+x ∼ pΘ (x ∣ z)
+
+p(z)
+N (0, I)
+
+Riassunto modulo 2
+
+pΘ (x ∣ z)
+
+16
+
+x = GΘ (z),
+
+z ∼ p(z)
+pΘ (x)
+z
+
+x
+
+Eϕ
+DΘ
+
+z
+
+Riassunto modulo 2
+
+17
+
+log pΘ (x)
+log pΘ (x) ≥ Eqϕ (z∣x) [ log pΘ (x ∣ z)] − KL(qϕ (z ∣ x) ∥ p(z))
+
+64 × 64 → 32 × 32 → 16 × 16 → 8 × 8 → 4 × 4
+
+1 → 32 → 64 → 128 → 256 → 512
+
+log σ 2
+
+μ
+
+z ∈ R64
+
+p(z) = N (0, I)
+
+xfake = GΘ (z)
+
+GΘ : R d → R n
+
+z ∼ p(z)
+DΨ
+
+z
+DΨ
+
+Riassunto modulo 2
+
+GΘ
+xreal
+
+xfake
+
+18
+
+512 × 4 × 4
+
+z ∈ R128
+
+4 × 4 → 8 × 8 → 16 × 16 → 32 × 32 → 64 × 64
+
+512 → 256 → 128 → 64 → 32 → 1
+64 × 64
+4×4
+
+y δ = Kx† + e
+
+z = arg min ∥KG(z) − y δ ∥22 + λ∥z∥22
+z
+
+x = G(z )
+z ∼ N (0, I)
+
+Riassunto modulo 2
+
+19
+
+x0 , x1 , … , xT ,
+x0
+
+(xt , t)
+xt
+xt =
+
+Riassunto modulo 2
+
+αt x 0 +
+
+1 − αt ϵ t ,
+
+ϵt ∼ N (0, I).
+
+20
+
+sin(ωk t)
+
+cos(ωk t)
+
+ωk
+
+x0
+ϵt
+
+xt
+
+ϵt
+
+(xt , t)
+
+xT ∼ N (0, I)
+ϵΘ (xt , t)
+
+Riassunto modulo 2
+
+21
+
+ϵΘ (xt , t)
+
+x
+^ 0 (xt , t)
+p(x)
+
+xt
+x
+^0
+
+xt
+x
+^ 0 (xt , t)
+
+xs ≈ RΘ (xt , t, s) − ηg t
+RΘ
+
+η
+
+x
+^0
+
+xt
+x
+^0
+D t = C(x
+^ 0 , K, y δ )
+
+Riassunto modulo 2
+
+22
+
+τ
+
+Riassunto modulo 2
+
+23
+
+

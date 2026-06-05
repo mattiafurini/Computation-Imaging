@@ -1,0 +1,738 @@
+→
+
+→
+
+→
+
+→
+
+→
+
+f : Ω ⊂ R2 → R
+
+→
+→
+→
+
+→
+
+Riassunto modulo 1
+
+1
+
+→
+⇒
+
+→
+→
+→
+→
+
+→
+
+→
+
+→
+→
+→
+→
+→
+
+→
+
+Riassunto modulo 1
+
+2
+
+→
+
+→
+→
+
+→
+
+→
+
+xn = x + ϵ
+ϵ ≃ N (0, σ)
+→
+→
+→
+→
+
+→
+
+xn = x + x ∗ ϵ
+
+Riassunto modulo 1
+
+3
+
+→
+→
+→
+
+y = H(x)
+
+f (x) → LSIS → g(x)
+
+f :R→R
+→
+
+f1 → LSIS → g1 f2 → LSIS → g2
+αf1 + βf2 → LSIS → αg1 + βg2
+
+f (x) → LSIS → g(x)
+f (x − a) → LSIS → g(x − a)
+
+→
+→
+
+Riassunto modulo 1
+
+4
+
+→
+→
+→
+
+g(x) = f (x) ∗ h(x) = ∫
+
+∞
+
+f (τ ) ⋅ h(x − τ ) dτ
+
+−∞
+
+⇒
+
+⇒
+
+∫∫ f (τ , μ) ⋅ h(x − τ , x − μ) dτ dμ
+
+→
+→
+
+Riassunto modulo 1
+
+5
+
+→
+
+→
+→
+→
+
+→
+→
+
+→
+
+→
+→
+→
+
+z = a + ib
+→
+→
+→
+
+∣z∣ =
+
+a2 + b2
+
+→
+
+Riassunto modulo 1
+
+6
+
+a
+ϕ = arg(z) = arctan( )
+b
+
+z = ∣z∣eiϕ
+→
+
+eiϕ = cos(ϕ) + i ⋅ sin(ϕ)
+
+f (x) = A sin(2πux + ϕ)
+→
+→
+→
+→
+
+→
+
+→
+
+N
+
+f (x) = ∑ Ak cos(kx) + Bk sin(kx)
+k=1
+
+→
+→
+
+(Ak , Bk )
+
+Riassunto modulo 1
+
+7
+
+F
+f
+
+fˆ
+F :H→K
+
+fˆ(w) = ∫
+
+∞
+
+f (x)e−i2πx dx
+
+−∞
+
+F −1 : K → H, F −1 (fˆ) = f
+
+F −1 (F (f )) = f
+
+eiθ = cos θ + i sin θ
+i=
+
+−1
+
+→
+
+⇒
+
+→
+
+O(N ⋅ log2 (N ))
+
+N = 2p
+
+→
+→
+
+⇒
+
+Riassunto modulo 1
+
+8
+
+⇒
+→
+
+f (x) ∗ h(x)
+
+F (u) ⋅ H(u)
+
+→
+
+→
+
+→
+
+→
+
+Riassunto modulo 1
+
+9
+
+y = Fx + e
+F
+
+→
+
+→
+
+⇒
+
+Ax = y
+
+→
+
+Ax = y + e
+
+→
+
+Riassunto modulo 1
+
+10
+
+Ax = y + e
+
+⇒
+→
+⇒
+
+min ∥Ax − (y + e)∥22
+⇒
+→
+
+→
+
+→
+
+Riassunto modulo 1
+
+11
+
+→
+
+→
+
+→
+
+min F (x)
+
+x∈Rn
+
+→
+
+min F (x)
+x∈D
+
+→
+
+a i ≤ xi ≤ b i
+
+x i ≥ 0 ∀i
+
+min d(Ax, y + ϵ) + λR(x)
+x
+
+d(Ax, y + ϵy δ )
+⇒
+
+→
+
+d(Ax, y δ ) = ∣∣Ax − y δ ∣∣22
+λR(x)
+→
+
+Riassunto modulo 1
+
+λ
+
+λ
+
+12
+
+M
+
+N
+
+R(x) = ∣∣x∣∣22 = ∑ ∑ x2i,j
+i=1 j=1
+
+→
+
+λ
+
+→
+≥
+
+→
+
+→
+
+f : R2 → R
+
+∇f : R2 → R2
+
+∇f (x) = (
+
+Riassunto modulo 1
+
+δf δf
+, )
+δx δy
+
+13
+
+→
+
+→
+
+λ
+
+→
+
+λ
+e
+e
+
+→
+→
+
+λ
+
+λ
+λ
+
+→
+
+λ
+
+Riassunto modulo 1
+
+14
+
+→
+
+x0 ∈ R n
+lim
+
+h→0
+
+J : Rn → R
+
+f (x0 + h) − f (x0 ) − J(h)
+=0
+h
+
+f : Rn → R
+f (αx + (1 − α)y) ≤ αf (x) + (1 − α)f (y),
+
+∀x, y ∈ Rn , α ∈ R+
+
+f (αx + (1 − α)y) < αf (x) + (1 − α)f (y),
+
+∀x, y ∈ Rn , α ∈ R+
+
+F : Rn → R
+ϵ>0
+
+x0
+
+f (x0 ) < f (x) ∀x ∈ S(x0 , ϵ)
+x0
+f (x0 ) < f (x) ∀x ∈ Rn
+
+→
+
+x∗
+∇f (x∗ ) = 0
+
+Riassunto modulo 1
+
+15
+
+x1 , x2 , ...
+
+x0
+lim xk = x∗
+
+k→∞
+
+x∗
+x∗
+
+→
+
+→
+
+∣∣∇f (xk )∣∣ < τ
+τ
+→
+
+xk
+
+→
+
+min ∣∣Ax − y∣∣22
+x
+
+AT Ax = AT y
+→
+
+min ∣∣Ax − y δ ∣∣22
+x
+
+→
+
+Riassunto modulo 1
+
+16
+
+λ
+
+⇒
+
+β
+
+→
+→
+
+→
+
+→
+
+x0
+
+x0
+xk
+
+→
+
+→
+
+yδ = K ∗ x + e
+→
+
+Riassunto modulo 1
+
+17
+
+→
+⇒
+
+K ∗ x = yδ
+Ax = y
+
+δ
+
+min ∥K ∗ x − y δ ∥22
+x
+
+f ′ (x, y)
+
+f (x, y) ∗ h(x, y) = g(x, y)
+
+F ′ (u, v) × H(u, v) = G(u, v)
+Av
+
+AT w
+
+→
+
+F ′ (u, v) =
+
+G(u, v)
+H(u, v)
+
+f ′ (x, y) = IDFT (F ′ (u, v))
+
+f (x, y) ∗ h(x, y) + η(x, y) = g(x, y)
+
+Riassunto modulo 1
+
+18
+
+→
+
+f ′ (x, y) = IDFT (F ′ (u, v))
+
+min ∥K ∗ x − y δ ∥22 + λR(x)
+x
+
+(minx≥0 )
+
+→
+
+min ∥K ∗ x − g∥22 + λ∥x∥22
+x
+
+→
+
+min ∣∣K ∗ x − y δ ∣∣22 + λR(x)
+z
+
+→
+
+⇒
+
+→
+
+→
+
+→
+
+→
+
+→
+
+Riassunto modulo 1
+
+19
+
+i
+j
+IHR (i, j) = ILR (round ( ) , round ( ))
+s
+s
+
+→
+
+→
+
+4×4
+
+→
+
+Bk
+⇒
+
+D
+nk
+yk = DBk x + nk
+
+Riassunto modulo 1
+
+20
+
+→
+
+N
+
+MSE =
+
+1
+2
+∑(xi − xGT
+i )
+N
+i=1
+
+→
+→
+
+PSNR = 10 log10 (
+
+max(x)2
+)
+MSE
+
+→
+→
+→
+
+→
+
+Riassunto modulo 1
+
+21
+
+→
+
+→
+
+→
+→
+
+→
+
+→
+
+Riassunto modulo 1
+
+22
+
+⇒
+→
+
+→
+⇒
+
+→
+
+(t, θ)
+
+t ∈ (−∞, +∞) →
+θ ∈ [0, 2π) →
+
+θk ∈ {θ1 , … , θnangoli }
+ti , per ogni i = 1, … , npixel
+→
+
+m(ti , θk ) = Pθk (ti )
+
+→
+
+→
+
+Riassunto modulo 1
+
+23
+
+⇒
+
+⇒
+⇒
+→
+
+→
+
+→
+
+Riassunto modulo 1
+
+24
+
+→
+
+→
+→
+
+→
+
+→
+→
+→
+
+→
+→
+→
+
+→
+
+→
+→
+
+Riassunto modulo 1
+
+25
+
+m1 , m2 , … , m7
+δ
+Nx × Ny
+N = Nx × Ny
+xj (per j = 1, … , N )
+→
+
+xj ∈ R
+
+μ
+
+N
+
+∑ ai,j xj = mi
+j=1
+
+→
+
+θ
+
+ai,j
+ai,j ⇒
+
+ai,j
+
+→
+→
+
+ai,j
+
+→
+→
+
+Riassunto modulo 1
+
+ai,j
+
+26
+
+
