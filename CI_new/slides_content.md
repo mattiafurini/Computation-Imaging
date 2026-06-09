@@ -73,8 +73,8 @@
 * **Title:** Quantitative Evaluation (Test Set)
 * **Text:** *Averaged over 50 test images due to inference time constraints of diffusion models.*
 * **Table:**
-  * **UNet:** PSNR: 27.54 dB | SSIM: 0.8762
-  * **TV:** PSNR: 24.35 dB | SSIM: 0.7034
+  * **UNet:** PSNR: 25.90 dB | SSIM: 0.8479
+  * **TV:** PSNR: 24.66 dB | SSIM: 0.7204
   * **DiffPIR:** PSNR: 23.38 dB | SSIM: 0.6941
 
 ## Slide 11: Qualitative Comparison
@@ -84,10 +84,18 @@
   * UNet: Cleanest (Best Distortion/PSNR).
   * DiffPIR: Sharpest (Best Perception, but worst PSNR).
 
-## Slide 12: Conclusions
+## Slide 12: Robustness to Severe Degradations
+* **Title:** Robustness Test: Out-of-Distribution Degradations (SR=4)
+* **Image:** Insert the 3x5 Grid Plot from the Severe Degradation test.
+* **Bullets:** 
+  * **UNet (End-to-End):** Completely collapses. Outputs a blurry image because it cannot generalize to unseen degradation scales.
+  * **TV (Variational):** Mathematically robust. Recovers edges effectively despite the larger blur, though the "watercolor" effect is amplified.
+  * **DiffPIR (Generative):** Hallucinates heavily. The severe degradation breaks the balance between data-fidelity and the diffusion prior, introducing high-frequency noise and grid artifacts.
+
+## Slide 13: Conclusions
 * **Title:** Conclusions
 * **Bullets:**
-  * **End-to-End:** Best for pure mathematical accuracy and fast inference.
-  * **Variational:** Reliable mathematical guarantees but unsuited for complex natural textures.
-  * **Generative:** Unmatched perceptual quality, but computationally expensive and sacrifices pixel-wise fidelity.
+  * **End-to-End:** Best for pure mathematical accuracy and fast inference, but lacks robustness.
+  * **Variational:** Reliable mathematical guarantees and highly robust, but unsuited for complex natural textures.
+  * **Generative:** Unmatched perceptual quality, but computationally expensive, hallucinates artifacts under severe degradation, and sacrifices pixel-wise fidelity.
 * **Text:** *Code available on GitHub. Thank you!*

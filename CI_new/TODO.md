@@ -15,18 +15,18 @@
 
 ### ⏳ Da Fare (Next Steps)
 1. **Valutazione Quantitativa sul Test Set:**
-   - [ ] Eseguire un loop sulle immagini del Test Set per calcolare la media esatta di PSNR e SSIM per la UNet, TV e DiffPIR.
+   - [x] Eseguire un loop sulle immagini del Test Set per calcolare la media esatta di PSNR e SSIM per la UNet, TV e DiffPIR.
 
 2. **Test sulle altre degradazioni richieste:**
-   - [ ] Valutare le prestazioni dei metodi cambiando i parametri di degradazione (Fattore SR=4, Livello di rumore=0.01) come richiesto dal bando per vedere quale metodo "crolla" prima.
+   - [x] Valutare le prestazioni dei metodi cambiando i parametri di degradazione (Fattore SR=4, Livello di rumore=0.01) come richiesto dal bando per vedere quale metodo "crolla" prima.
 
 3. **Discussione e Presentazione (Google Slides):**
-   - [ ] Inserire i Plot visivi appena creati.
-   - [ ] Inserire le tabelle numeriche con PSNR e SSIM medi.
-   - [ ] Discutere la scelta dell'adattamento RGB per i metodi variazionali.
-   - [ ] Discutere il trade-off teorico tra UNet (*over-smoothing*, regressione alla media, PSNR alto) e DiffPIR (*allucinazioni realistiche*, rumore da data-fidelity, PSNR potenzialmente più basso).
-   - [ ] Aggiungere la giustificazione dei parametri euristici scelti (es. $\lambda=0.05$ per il TV).
+   - [x] Inserire i Plot visivi appena creati.
+   - [x] Inserire le tabelle numeriche con PSNR e SSIM medi.
+   - [x] Discutere la scelta dell'adattamento RGB per i metodi variazionali.
+   - [x] Discutere il trade-off teorico tra UNet (*over-smoothing*, regressione alla media, PSNR alto) e DiffPIR (*allucinazioni realistiche*, rumore da data-fidelity, PSNR potenzialmente più basso).
+   - [x] Aggiungere la giustificazione dei parametri euristici scelti (es. $\lambda=0.05$ per il TV).
 
 4. **Consegna Github:**
-   - [ ] Pulire il notebook.
-   - [ ] Pushare il `TODO.md` e `README.md` aggiornati assieme al codice per il proprio collega e per il prof.
+   - [x] Pulire il notebook.
+   - [x] Pushare il `TODO.md` e `README.md` aggiornati assieme al codice per il proprio collega e per il prof.

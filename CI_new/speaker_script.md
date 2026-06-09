@@ -52,12 +52,17 @@
 
 ### Slide 10: Quantitative Results (Speaker 1)
 **Speaker 1:**
-"We evaluated our methods on 50 test images. Looking at the quantitative results, the UNet heavily dominates the metrics, achieving a PSNR of 27.5 dB and an SSIM of 0.87. Interestingly, Total Variation performed worse (24.3 dB), and DiffPIR scored the lowest mathematically (23.3 dB)."
+"We evaluated our methods on 50 test images. Looking at the quantitative results, the UNet heavily dominates the metrics, achieving a PSNR of 25.9 dB and an SSIM of 0.84. Interestingly, Total Variation performed worse (24.6 dB), and DiffPIR scored the lowest mathematically (23.3 dB)."
 
 ### Slide 11: Qualitative Comparison (Speaker 2)
 **Speaker 2:**
 "However, these metrics only tell half the story. As you can see in this visual comparison, DiffPIR (on the far right) generates incredibly sharp and realistic textures that the UNet completely smoothed out. This perfectly demonstrates the 'Perception-Distortion Trade-off' theorem we studied in class: DiffPIR sacrifices pixel-by-pixel mathematical accuracy (PSNR) to achieve much higher perceptual quality, while UNet does the exact opposite."
 
-### Slide 12: Conclusions (Speaker 1)
+### Slide 12: Robustness to Severe Degradations (Speaker 2)
+**Speaker 2:**
+"Finally, we tested the robustness of these methods against a severe, out-of-distribution degradation: a Super-Resolution factor of 4. The results, shown here, perfectly illustrate their theoretical limitations. 
+The UNet completely collapses, outputting a blurry image because it simply cannot generalize to a degradation scale it never saw during training. Total Variation, however, is mathematically robust: it actively solves the inverse problem using the new blur kernel, recovering edges surprisingly well, even if the watercolor effect is stronger. DiffPIR struggles: the severe degradation causes a conflict between its generative prior and the data-fidelity gradient, leading to hallucinatory noise and grid-like artifacts instead of clean textures."
+
+### Slide 13: Conclusions (Speaker 1)
 **Speaker 1:**
-"To conclude, our comparative analysis confirms that there is no perfect method. End-to-end models like UNet are best for pure mathematical accuracy and fast inference. Variational methods struggle with natural textures but offer solid mathematical guarantees. Finally, Generative models provide state-of-the-art visual realism, but at the cost of slow inference and lower pixel-wise fidelity. Thank you for your attention!"
+"To conclude, our comparative analysis confirms that there is no perfect method. End-to-end models like UNet are best for pure mathematical accuracy and fast inference, but lack robustness. Variational methods offer solid mathematical guarantees and robust generalization, but struggle with natural textures. Finally, Generative models provide state-of-the-art visual realism, but at the cost of slow inference, hallucinated artifacts under severe degradation, and lower pixel-wise fidelity. Thank you for your attention!"
