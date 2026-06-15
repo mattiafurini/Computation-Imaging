@@ -2,6 +2,7 @@
 data/
 weights/
 lsun_tools/
+*.zip
 
 # Python
 __pycache__/
