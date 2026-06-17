@@ -90,9 +90,24 @@ style: |
     font-size: 0.9em;
     color: #334155;
   }
-  tr:nth-child(even) td {
-    background-color: #fafafa; /* Faintly alternating rows */
+  /* Righe dei metodi con background colorati */
+  tr:nth-child(1) td { 
+    background-color: #f0fdf4 !important; /* UNet: Soft Mint Green */
+    color: #15803d;
   }
+  tr:nth-child(1) td:first-child strong { color: #15803d; }
+
+  tr:nth-child(2) td { 
+    background-color: #f0f9ff !important; /* TV: Soft Blue */
+    color: #0369a1;
+  }
+  tr:nth-child(2) td:first-child strong { color: #0369a1; }
+
+  tr:nth-child(3) td { 
+    background-color: #f5f3ff !important; /* DiffPIR: Soft Purple */
+    color: #6d28d9;
+  }
+  tr:nth-child(3) td:first-child strong { color: #6d28d9; }
   
   footer { font-size: 0.6em; color: #94a3b8; font-weight: 500; }
   
