@@ -1,87 +1,69 @@
-# 🎤 Speaker Script (10-15 minutes total)
+# 🎤 Speaker Script (10-15 minutes)
 
-*This script is divided into two parts. **Speaker 1** will present the introduction, dataset, UNet, and final quantitative results. **Speaker 2** will present the mathematical approaches (TV), generative approaches (DiffPIR), and the visual trade-offs. Each slide takes about 45-60 seconds to explain.*
+*Speaker 1: Introduction, dataset, UNet, quantitative results. Speaker 2: TV, DiffPIR, qualitative analysis. ~45-60s per slide.*
 
 ---
 
-## Part 1: Speaker 1 (Approx. 5-6 minutes)
+## Part 1: Speaker 1 (5-6 min)
 
 ### Slide 1: Title
-**Speaker 1:** 
-"Good morning everyone. Today, my colleague and I are presenting our Computational Imaging project. We tackled the inverse problem of Super-Resolution to explore the perception-distortion trade-offs."
+"Good morning. Today we present our Computational Imaging project on Super-Resolution, exploring the perception-distortion trade-off."
 
 ### Slide 2: The Inverse Problem
-**Speaker 1:**
-"We formulated the forward model mathematically as $y = Hx + e$. The operator $H$ represents a Gaussian blur followed by downsampling, and $e$ represents additive white Gaussian noise. Because this system is highly underdetermined, we lose the property of uniqueness."
+"Our model is $y = Hx + e$, where $H$ is blur plus downsampling, and $e$ is noise. This system is heavily underdetermined, losing uniqueness."
 
 ### Slide 3: Project Overview
-**Speaker 1:**
-"To solve this ill-posed problem, we compare three fundamentally different approaches, each relying on a different type of prior knowledge: End-to-End learning with a UNet, a Variational approach using Total Variation, and a Generative approach using DiffPIR."
+"We compare three approaches using different priors: a UNet (End-to-End), Total Variation (Variational), and DiffPIR (Generative)."
 
 ### Slide 4: Dataset & Setup
-**Speaker 1:**
-"To ensure a fair and deterministic comparison, we built a unified degradation pipeline. We used a subset of 4000 RGB images from the LSUN Church dataset. Importantly, we explicitly resized all images to 256x256 pixels to fit the networks' architectures. To comprehensively evaluate the models, we tested 4 distinct degradation scenarios by combining Super-Resolution factors of 2 and 4 with noise levels of 0.005 and 0.01."
+"We created a unified degradation pipeline on 4000 resized LSUN Church images. We tested 4 degradation scenarios combining Super-Resolution factors of 2 and 4 with noise levels of 0.005 and 0.01."
 
 ### Slide 5: Method 1 - UNet Architecture
-**Speaker 1:**
-"The first approach we implemented is an End-to-End deep learning method. We built a custom Encoder-Decoder UNet architecture with skip connections to route high-frequency spatial details directly to the output."
+"Our first approach is an End-to-End UNet with skip connections to directly route high-frequency details to the output."
 
 ### Slide 6: UNet Implementation Details
-**Speaker 1:**
-"We trained it from scratch on our Kaggle environment using an L1 Loss function over 50 epochs, optimizing with Adam. We specifically chose L1 loss because it enforces sparsity in the residual error better than MSE."
+"Trained from scratch using Adam and L1 Loss, chosen specifically to better enforce sparsity in the residual error."
 
 ### Slide 7: UNet Theoretical Behavior
-**Speaker 1:**
-"From a theoretical standpoint, minimizing this loss forces the network to predict the conditional mean of all possible high-resolution patches. Because of this 'regression to the mean', the network is incredibly effective at removing noise, but it struggles to synthesize complex high-frequency details, resulting in over-smoothed textures."
+"Minimizing L1 predicts the conditional mean of possible high-resolution patches. This 'regression to the mean' effectively removes noise but yields over-smoothed textures."
 
 ---
 
-## Part 2: Speaker 2 (Approx. 5-6 minutes)
+## Part 2: Speaker 2 (5-6 min)
 
-### Slide 8: Method 2 - Variational (Total Variation)
-**Speaker 2:**
-"Thank you. The second approach we implemented is a classical Variational method. The objective function seeks to minimize the data-fitting error while applying Total Variation as a regularization prior to promote sparse spatial gradients."
+### Slide 8: Method 2 - Total Variation
+"The second method is a Variational approach minimizing data-fitting error, using Total Variation to promote sparse spatial gradients."
 
 ### Slide 9: TV Implementation Details
-**Speaker 2:**
-"We solved this optimization problem via an iterative Proximal Gradient Descent scheme. We heuristically tuned the regularization weight lambda to 0.05. Furthermore, since standard TV is formulated for grayscale, we adapted the mathematical operators to process 3D RGB tensors by computing the divergence channel-by-channel."
+"Solved via Proximal Gradient Descent. We tuned lambda to 0.05 and adapted the divergence operator channel-by-channel for RGB tensors."
 
 ### Slide 10: TV Theoretical Behavior
-**Speaker 2:**
-"The main theoretical assumption of Total Variation is that images are 'piecewise constant'. While excellent for piecewise-smooth signals, it is problematic for natural images. As a result, our TV reconstruction preserves sharp edges but creates a strong 'staircase' or 'watercolor' effect, destroying natural textures like the sky or trees."
+"TV assumes images are 'piecewise constant'. This preserves edges but creates a 'watercolor' or 'staircase' effect, destroying natural textures."
 
-### Slide 11: Method 3 - Generative (DiffPIR)
-**Speaker 2:**
-"Our third and final approach is DiffPIR, which uses an unconditional diffusion model as a generative prior. At each reverse diffusion step, it blends the generative denoising process with a gradient step that enforces data consistency."
+### Slide 11: Method 3 - DiffPIR
+"Our final approach, DiffPIR, uses an unconditional diffusion model prior, blending denoising with a data consistency gradient step."
 
 ### Slide 12: DiffPIR Implementation Details
-**Speaker 2:**
-"We leveraged a pre-trained model on 1000 diffusion steps, but we sampled efficiently using 50 DDIM steps to reduce inference time. The data consistency step is computed using the adjoint of our specific degradation operator $H$."
+"We used 50 DDIM sampling steps for efficiency. The consistency step uses the adjoint operator $H^T$ to match our degradation."
 
 ### Slide 13: DiffPIR Theoretical Behavior
-**Speaker 2:**
-"Unlike the UNet, DiffPIR does not predict an average image; it samples from the actual data distribution. This allows it to 'hallucinate' highly realistic, high-frequency details. However, balancing the generative prior with the data-consistency constraint can sometimes introduce minor generative noise or grid-like artifacts."
+"Instead of an average, DiffPIR samples from the data distribution to 'hallucinate' realistic details. However, balancing this with data consistency can introduce grid artifacts."
 
 ---
 
-## Part 3: Wrapping Up (Speaker 1 & 2)
+## Part 3: Wrapping Up
 
 ### Slide 14: Quantitative Results (Speaker 1)
-**Speaker 1:**
-"We evaluated our methods quantitatively across all 4 degradation scenarios. As you can see in the table, the UNet generally dominates the metrics, particularly in the easier scenarios, achieving the highest PSNR and SSIM. Total Variation performed worse mathematically, and DiffPIR scored the lowest. However, as the degradation becomes more severe (SR=4), you can see the gap in metrics shift, reflecting each method's structural limitations."
+"Quantitatively, UNet dominates PSNR and SSIM across scenarios. TV and DiffPIR score lower. Under severe degradation (SR=4), performance drops significantly across all models."
 
 ### Slide 15: Qualitative Comparison (Speaker 2)
-**Speaker 2:**
-"However, these metrics only tell half the story. As you can see in this visual comparison, DiffPIR generates incredibly sharp and realistic textures that the UNet completely smoothed out. This perfectly demonstrates the 'Perception-Distortion Trade-off' theorem we studied in class: DiffPIR sacrifices pixel-by-pixel mathematical accuracy (PSNR) to achieve much higher perceptual quality, while UNet does the exact opposite."
+"Metrics aren't everything. DiffPIR generates sharp, realistic textures that UNet smooths out. This illustrates the 'Perception-Distortion Trade-off': DiffPIR trades PSNR for perceptual quality."
 
-### Slide 16: Qualitative Breakdown under Severe Degradation (Speaker 2)
-**Speaker 2:**
-"Finally, we analyzed the visual breakdown of these methods under the most severe degradation: a Super-Resolution factor of 4 with a noise level of 0.01. The UNet underperforms structurally; it outputs a blurry image because it simply predicts a conservative average. Total Variation is mathematically consistent: it actively solves the inverse problem to recover edges, even if the watercolor effect is heavily amplified. DiffPIR struggles: the severe degradation causes a conflict between its generative prior and the data-fidelity gradient, leading to heavy hallucinatory noise and grid artifacts instead of clean textures."
+### Slide 16: Qualitative Breakdown (Speaker 2)
+"Under severe degradation (SR=4, Noise=0.01): UNet blurs heavily. TV recovers edges but amplifies the watercolor effect. DiffPIR's prior clashes with data fidelity, causing heavy hallucinatory noise."
 
 ### Slide 17: Conclusions (Speaker 1)
-**Speaker 1:**
-"To conclude, our comparative analysis confirms that there is no perfect method. End-to-end models are best for pure mathematical accuracy but lack robustness. Variational methods offer solid mathematical guarantees and robustness, but struggle with natural textures. Finally, Generative models provide state-of-the-art visual realism, but hallucinate under severe degradation."
+"In conclusion: UNet offers accuracy but lacks robustness; TV gives mathematical guarantees but fails on textures; DiffPIR provides photorealism but hallucinates under severe degradation."
 
 ### Slide 18: Future Developments (Speaker 1)
-**Speaker 1:**
-"For future developments, we look toward Algorithm Unfolding to combine variational guarantees with deep learning priors, or advanced diffusion solvers to better control the trade-off between hallucinations and physical data consistency. Our code is available on GitHub. Thank you for your attention!"
+"Future work could explore Algorithm Unfolding to combine variational and deep learning methods, or advanced diffusion solvers. Thank you!"
