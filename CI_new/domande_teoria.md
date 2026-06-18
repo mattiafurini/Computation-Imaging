@@ -146,3 +146,53 @@ style: |
 * **La problematica:** Applicare la TV classica in vettoriale accoppiando i canali è matematicamente complesso. Se si usano operatori "standard" pensati per il medicale (come il Gradient di IPPy), i canali aggiuntivi vengono addirittura ignorati, corrompendo l'immagine.
 * **La nostra soluzione:** Abbiamo implementato una **Channel-wise Anisotropic TV** sfruttando lo slicing tensoriale di PyTorch. Calcoliamo la divergenza in parallelo per ogni canale colore (R, G, B) in modo del tutto **indipendente**.
 * **Pro e Contro:** È un approccio estremamente rapido da calcolare che ci ha permesso di evitare bug e bypassare le limitazioni degli operatori base, ma siccome penalizza i canali in modo slegato, può occasionalmente generare microscopici sfasamenti (color bleeding) in zone di forte gradiente netto.
+
+---
+
+## 9. Scelta di Lambda nel TV ($\lambda = 0.05$)
+
+**Domanda:** *Nel metodo Total Variation (TV) avete usato $\lambda = 0.05$, come lo avete scelto e perché?*
+
+* **Il ruolo di $\lambda$:** Regola il "peso" della regolarizzazione rispetto alla Data Fidelity.
+* **Valori bassi (es. 0.001):** Vince la Data Fidelity. L'immagine rimarrebbe sgranata e il rumore gaussiano non verrebbe attenuato.
+* **Valori alti (es. 1.0):** Vince il TV. L'algoritmo piallerebbe completamente l'immagine per azzerare i gradienti, creando un effetto acquarello estremo che distruggerebbe la geometria della chiesa.
+* **Lo "Sweet Spot":** Il valore 0.05 è stato trovato empiricamente. Offre il miglior compromesso per rimuovere il rumore preservando al tempo stesso i bordi principali (macro-edges) della struttura architettonica.
+
+---
+
+## 10. I 50 DDIM steps di DiffPIR e le allucinazioni
+
+**Domanda:** *Perché avete scelto 50 step per DiffPIR? Aumentandoli a 100 o 200 non si sarebbero ridotte le allucinazioni?*
+
+* **La scelta di 50 step (DDIM):** Il modello originale DDPM richiede 1000 step, rendendo l'inferenza troppo lenta per testare un intero dataset. Usando il campionamento DDIM, 50 step rappresentano il *trade-off ideale* (ampiamente usato in letteratura) tra velocità di esecuzione e mantenimento della qualità generativa. Valori minori renderebbero il salto temporale troppo brusco.
+* **Allucinazioni:** Aumentare gli step a 100 o 200 **non riduce le allucinazioni**. L'allucinazione non deriva dalla "fretta" del calcolo, ma dalla **natura mal posta del problema**. Ad alti livelli di degrado (SR=4), le informazioni ad alta frequenza sono perse per sempre. Il Prior generativo deve necessariamente "inventare" (allucinare) mattoni o finestre per rendere l'immagine fotorealistica. Più step servirebbero solo a disegnare queste allucinazioni con maggiore definizione!
+
+---
+
+## 11. La nostra UNet vs librerie preconfezionate (es. IPPy)
+
+**Domanda:** *Quali sono le differenze tecniche tra la vostra UNet implementata da zero e quelle incluse in librerie didattiche (come IPPy) usate per le TAC?*
+
+* **Gestione del colore (3 canali vs 1 canale):** La nostra UNet è inizializzata per processare i 3 canali RGB contemporaneamente in profondità (`in_channels=3`). Questo permette alla rete di imparare le correlazioni tra rosso, verde e blu per ricostruire le texture. Le reti per la TAC sono tipicamente in bianco e nero (`in_channels=1`).
+* **Architettura classica vs Residuale:** Abbiamo optato per la classica U-Net (DoubleConv e Skip Connections dirette) ideale come baseline universale per Image-to-Image translation, mentre in campo medico spesso si usano reti Residuali (ResUNet) per stimare solo il rumore (residual learning).
+* **L1 Loss vs L2 Loss:** Noi abbiamo addestrato la rete minimizzando l'errore assoluto (L1). La L1 perdona di più gli errori isolati e produce immagini leggermente più nitide e con contorni migliori rispetto all'errore quadratico (L2/MSE), che tende a generare un over-smoothing estremo.
+
+---
+
+## 12. Il nostro DiffPIR vs DiffPIR per ricostruzioni TAC
+
+**Domanda:** *Perché il vostro DiffPIR ha prodotto risultati eccellenti mentre lo stesso algoritmo applicato alle TAC mediche spesso fallisce miseramente?*
+
+* **La forza del Prior generativo:** Noi abbiamo sfruttato un modello di diffusione addestrato nativamente ed esplicitamente su dataset di **chiese** (`ddpm-ema-church-256`). Il Prior sapeva perfettamente com'era fatto l'oggetto. In ambito medico è difficilissimo avere modelli di diffusione potenti pre-addestrati specificamente per quello scanner TAC, portando il Prior a fallire la convergenza.
+* **L'Operatore H:** Nel nostro problema (SR spaziale), l'operatore di *Data Consistency* lavora interamente nel dominio dei pixel (sfocatura e downsampling). Nelle TAC, l'operatore richiede di simulare la Trasformata di Radon (Sinogrammi) e applicare la Filtered Back Projection, rendendo il calcolo cross-dominio estremamente instabile.
+* **Accettabilità:** "Allucinare" una finta finestra fotorealistica in una foto è un trade-off accettabile pur di avere un'immagine visivamente piacevole. Allucinare dettagli in una TAC medica è un pericolo assoluto.
+
+---
+
+## 13. Perché non addestrare la Diffusione da zero?
+
+**Domanda:** *Visto che avete addestrato la UNet, non sarebbe stato meglio addestrare anche il modello di diffusione da zero ai fini dell'esame?*
+
+* **Risposta:** Assolutamente no. Avrebbe violato l'essenza stessa del metodo **DiffPIR**.
+* **Paradigma Plug-and-Play (PnP):** DiffPIR è un metodo *Zero-Shot*. Lo scopo teorico di questa famiglia algoritmica è dimostrare che si può prendere un modello generativo *già addestrato in modo incondizionato* e usarlo "as-is" per risolvere problemi inversi, gestendo il degrado solo matematicamente in fase di inferenza (tramite la guida $H^T$).
+* **Limiti Computazionali:** Addestrare da zero un DDPM su immagini $256 \times 256$ richiede risorse hardware massive (cluster A100) e settimane di addestramento. Tentarlo sulle normali risorse accademiche (es. Kaggle) avrebbe portato al fallimento pratico del progetto.
