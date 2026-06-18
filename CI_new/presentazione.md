@@ -1,5 +1,6 @@
 ---
 marp: true
+html: true
 theme: default
 paginate: true
 backgroundColor: #ffffff
@@ -14,6 +15,27 @@ style: |
   }
   
   /* --- TOTAL LIGHT COVER --- */
+  .twocolumns {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 30px;
+  }
+  .twocolumns > div {
+    flex: 1;
+  }
+  .twocolumns > div:first-child {
+    flex: 0.9;
+  }
+  .twocolumns > div:last-child {
+    flex: 1.1;
+  }
+  .twocolumns table {
+    display: table;
+    width: 100%;
+    table-layout: auto;
+  }
+  
   section.lead {
     background: linear-gradient(135deg, #f0fdf4 0%, #eff6ff 100%);
     color: #1e293b;
@@ -48,6 +70,13 @@ style: |
     border-bottom: 3px solid #3b82f6; 
     padding-bottom: 10px;
     margin-bottom: 25px;
+  }
+  h2 small {
+    display: block;
+    font-size: 0.6em;
+    font-weight: 500;
+    color: #64748b;
+    margin-top: 5px;
   }
   
   ul { margin-top: 10px; }
@@ -142,27 +171,18 @@ We compare three distinct approaches using different *priors*:
 * **Splits:** 3200 Train | 400 Val | 400 Test.
 * **Degradation:** 4 scenarios (SR factors $\{2, 4\}$, Noise $\{0.005, 0.01\}$).
 
-![w:550](immagini%20presentazione/degradation_grid_image.png)
+![w:900](immagini%20presentazione/degradation_grid_image.png)
 
 ---
 
 ## Method 1 — End-to-End (UNet)
 
 * **Architecture:** Encoder-Decoder with Skip Connections.
-  * *Deep layers:* Global semantic context.
-  * *Skip connections:* High-frequency spatial details.
-
-![w:450](path_to_unet_diagram.png)
-
----
-
-## UNet: Details & Behavior
-
 * **Setup:** L1 Loss (enforces sparsity), Adam optimizer, 50 Epochs.
-* **"Regression to the Mean":** Minimizing L1 predicts the *conditional mean* of HR patches.
+* **Mechanism:** Minimizing L1 predicts the *conditional mean* of HR patches.
 * **Result:** Excellent noise removal, but over-smoothed textures.
 
-![w:450](immagini%20presentazione/unet_zoom_smooth_bricks.png)
+![w:450](immagini%20presentazione/uNet-architecture.png)
 
 ---
 
@@ -170,66 +190,129 @@ We compare three distinct approaches using different *priors*:
 
 * **Objective Function:**
   $$\min_{x} \frac{1}{2}||y - Hx||_2^2 + \lambda TV(x)$$
-
-* **Data Fitting:** Consistency with LR observation $y$.
-* **Prior:** $TV(x)$ promotes sparse spatial gradients (piecewise constant).
-
----
-
-## TV: Details & Behavior
-
+* **Mechanism:** Data consistency with $y$ + prior $TV(x)$ promoting sparse spatial gradients.
 * **Setup:** FISTA solver, $\lambda = 0.05$, Channel-by-channel divergence for RGB.
-* **The Staircase Effect:** 
-  * Assumes "piecewise constant" images.
-  * Causes artificial blocky regions while preserving macro-edges.
+* **Result:** Preserves macro-edges but causes a "staircase effect" (artificial blocky regions).
 
 ---
 
 ## Method 3 — Generative (DiffPIR)
 
 * **Prior:** Unconditional Diffusion Model (`ddpm-ema-church-256`).
-* **Mechanism:** Interleaves DDIM denoising steps with a Data-Fidelity gradient step.
-* **Data Consistency:** Uses adjoint $H^T$ to guide generation toward $y$.
-
----
-
-## DiffPIR: Details & Behavior
-
+* **Mechanism:** Interleaves DDIM denoising steps with Data-Fidelity guidance via $H^T$.
 * **Setup:** 50 DDIM sampling steps.
-* **Hallucinations:** Actively samples from $p(x)$ rather than averaging.
-* **Result:** Highly realistic textures, but prone to generative noise/grid artifacts.
+* **Result:** Actively samples from $p(x)$ yielding highly realistic textures, but prone to hallucinations/artifacts.
 
 ---
 
-## Quantitative Evaluation
+## Evaluation: Mild Degradation <br> <small>(SR=2, Noise=0.005)</small>
 
-*Average over 50 test images.*
+<div class="twocolumns">
 
-| Method | SR=2, n=0.005 | SR=2, n=0.01 | SR=4, n=0.005 | SR=4, n=0.01 |
-| :--- | :---: | :---: | :---: | :---: |
-| **UNet** | 27.20 / 0.8765 | 26.99 / 0.8609 | 22.21 / 0.6475 | 22.17 / 0.6381 |
-| **TV** | 24.28 / 0.7183 | 24.27 / 0.7179 | 22.26 / 0.6205 | 22.24 / 0.6196 |
-| **DiffPIR**| 24.00 / 0.7389 | 23.96 / 0.7331 | 20.85 / 0.5318 | 20.83 / 0.5274 |
+<div>
 
-* **UNet** dominates MSE/PSNR and SSIM, despite lower visual realism.
+| Method | PSNR / SSIM |
+| :--- | :---: |
+| **UNet** | **27.20 / 0.8765** |
+| **TV** | 24.28 / 0.7183 |
+| **DiffPIR**| 24.00 / 0.7389 |
+
+</div>
+
+<div>
+
+![w:650](immagini%20presentazione/kaggl_3x5_grid_1.png)
+
+</div>
+
+</div>
 
 ---
 
-## Perception-Distortion Tradeoff
+## Evaluation: Severe Degradation <br> <small>(SR=4, Noise=0.01)</small>
 
-* **UNet:** Cleanest (Best PSNR), over-smoothed.
-* **DiffPIR:** Sharpest details (Best Perception), lower PSNR.
+<div class="twocolumns">
 
-![w:700](immagini%20presentazione/kaggl_3x5_grid_1.png)
+<div>
+
+| Method | PSNR / SSIM |
+| :--- | :---: |
+| **UNet** | 22.17 / **0.6381** |
+| **TV** | **22.24** / 0.6196 |
+| **DiffPIR**| 20.83 / 0.5274 |
+
+</div>
+
+<div>
+
+![w:650](immagini%20presentazione/severe_degradation_breakdown.png)
+
+</div>
+
+</div>
 
 ---
 
-## Visual Breakdown (Severe Degradation)
-*(SR=4, Noise=0.01)*
+## UNet Limitations: Over-smoothing & OOD
 
-* **UNet:** Structural collapse, highly blurred.
-* **TV:** Mathematically consistent edges, amplified "watercolor" effect.
-* **DiffPIR:** Heavy hallucinations and grid artifacts due to prior/data-fidelity conflict.
+<div class="twocolumns">
+
+<div>
+
+* **OOD Failure:** Fails dramatically on data or degradations not seen during training.
+* **Over-smoothing:** Averages out high-frequency details, causing natural textures to look artificially flat.
+
+</div>
+
+<div>
+
+![w:450](immagini%20presentazione/unet_zoom_smooth_bricks.png)
+
+</div>
+
+</div>
+
+---
+
+## TV Limitations: The "Watercolor" Effect
+
+<div class="twocolumns">
+
+<div>
+
+* **"Watercolor" Effect:** Forces complex textures into unnatural, flat color blocks.
+* **Staircase Artifacts:** Creates artificial blocky regions while preserving macro-edges, destroying photorealism.
+
+</div>
+
+<div>
+
+![w:450](immagini%20presentazione/tv_zoom_watercolor.png)
+
+</div>
+
+</div>
+
+---
+
+## DiffPIR Limitations: Hallucinations
+
+<div class="twocolumns">
+
+<div>
+
+* **Hallucinations:** Actively invents non-existent structures, especially when original information is completely lost (SR=4).
+* **Grid Artifacts:** Unnatural repeating patterns emerge from the conflict between the generative prior and data consistency.
+
+</div>
+
+<div>
+
+![w:450](immagini%20presentazione/diffpir_zoom_hallucinations.png)
+
+</div>
+
+</div>
 
 ---
 
@@ -241,45 +324,6 @@ We compare three distinct approaches using different *priors*:
 
 ---
 
-## Future Developments
-
-* **Algorithm Unfolding:** Combine TV gradient steps with neural networks.
-* **Advanced Generative Models:** Dynamic trade-off control between hallucination and physical consistency.
-
----
-
 # Thank you!
 
 *Code available on GitHub*
-
----
-
-<!-- ================= BACKUP SLIDES ================= -->
-
-# Backup Slides (Q&A)
-
----
-
-## Backup: RGB in Total Variation
-
-* TV computed separately along $x$ and $y$ using finite differences.
-* **Channel-wise Anisotropic TV**: Independent penalty for R, G, B.
-* Fast, but may cause slight color bleeding on sharp edges.
-
----
-
-## Backup: DiffPIR Data Consistency
-
-* Pre-trained model provides prior gradient $\nabla_x \log p(x)$.
-* **Data Consistency Step:** Interleaved to anchor to $y$:
-  $$ \hat{x}_0 = \arg\min_x ||y - Hx||^2_2 + \rho ||x - x_{pred}||^2_2 $$
-* Ensures hallucinated $x$ collapses exactly into $y$ when degraded.
-
----
-
-## Backup: The Degradation Operator ($H$)
-
-* Built in spatial domain via `conv2d`.
-* Gaussian blur kernel dependent on scale factor.
-* **Padding `reflection`:** Avoids black borders.
-* Downsampling via regular sampling (stride = $s$).
