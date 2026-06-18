@@ -221,7 +221,55 @@ We compare three distinct approaches using different *priors*:
 
 <div>
 
-![w:650](immagini%20presentazione/kaggl_3x5_grid_1.png)
+![w:650](immagini%20presentazione/kaggl_3x5_grid_sr2_n0.005.png)
+
+</div>
+
+</div>
+
+---
+
+## Evaluation: Moderate Degradation <br> <small>(SR=2, Noise=0.01)</small>
+
+<div class="twocolumns">
+
+<div>
+
+| Method | PSNR / SSIM |
+| :--- | :---: |
+| **UNet** | **26.99 / 0.8609** |
+| **TV** | 24.27 / 0.7179 |
+| **DiffPIR**| 23.96 / 0.7331 |
+
+</div>
+
+<div>
+
+![w:650](immagini%20presentazione/kaggl_3x5_grid_sr2_n0.01.png)
+
+</div>
+
+</div>
+
+---
+
+## Evaluation: High Degradation <br> <small>(SR=4, Noise=0.005)</small>
+
+<div class="twocolumns">
+
+<div>
+
+| Method | PSNR / SSIM |
+| :--- | :---: |
+| **UNet** | 22.21 / **0.6475** |
+| **TV** | **22.26** / 0.6205 |
+| **DiffPIR**| 20.85 / 0.5318 |
+
+</div>
+
+<div>
+
+![w:650](immagini%20presentazione/kaggl_3x5_grid_sr4_n0.005.png)
 
 </div>
 
