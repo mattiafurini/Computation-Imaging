@@ -368,7 +368,7 @@ We compare three distinct approaches using different *priors*:
 
 * **UNet:** Ideal for mathematical accuracy and speed; lacks structural robustness.
 * **TV:** Solid mathematical guarantees; unsuitable for natural textures.
-* **DiffPIR:** State-of-the-art photorealism; heavy compute and artifact-prone under severe degradation.
+* **DiffPIR:** Recreates highly realistic images, but produces hallucinations and artifacts under severe degradation.
 
 ---
 

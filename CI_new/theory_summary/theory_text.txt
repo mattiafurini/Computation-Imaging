@@ -1,0 +1,459 @@
+Computational Imaging
+Riassunto Completo – Moduli 1 e 2
+Preparazione Esame Magistrale
+2026
+
+Indice
+1 Fondamenti di Immagini e Computazione
+
+2
+
+2 Istogrammi, Rumore e Filtri Spaziali
+
+2
+
+3 Dominio delle Frequenze (Fourier)
+
+3
+
+4 Imaging Computazionale e Problemi Inversi
+
+3
+
+5 Regolarizzazione (Model-Based e Iterativa)
+
+4
+
+6 Applicazioni Principali del Modulo 1
+6.1 Image Deblur (Deconvoluzione) . . . . . . . . . . . . . . . . . . . . . . . . . . . .
+6.2 Super Resolution (Risoluzione Spaziale) . . . . . . . . . . . . . . . . . . . . . . .
+6.3 Tomografia Computerizzata a Raggi X (CT) . . . . . . . . . . . . . . . . . . . . .
+
+4
+4
+5
+5
+
+7 Modulo 2: Dai Problemi Inversi alle Neural Imaging Pipelines
+7.1 1. Integrazione tra Ottimizzazione e Deep Learning . . . . . . . . . . . . . . . . .
+7.2 2. Ricostruzione non Supervisionata (Unsupervised e Self-Supervised) . . . . . .
+7.3 3. Implicit Neural Representations (INR) e NeRF . . . . . . . . . . . . . . . . . .
+7.4 4. Generative Imaging via Score-Based e Diffusion Models . . . . . . . . . . . . .
+
+7
+7
+7
+8
+8
+
+8 Metriche di Valutazione delle Immagini
+
+9
+
+1
+
+1
+
+Fondamenti di Immagini e Computazione
+• Image Processing vs Computer Vision vs Computer Graphics:
+– Image Processing: Input (immagine) → Output (immagine modificata per migliorarne nitidezza/messa a fuoco). È un sottoinsieme della Computer Vision.
+– Computer Vision: Input (immagine/video) → Output (comprensione ad alto livello
+per automatizzare compiti del sistema visivo umano).
+– Computer Graphics: Creazione o manipolazione di immagini/sketch a partire da
+dati informatici (es. film, intrattenimento).
+• Rappresentazione Matematica: Un’immagine reale è una funzione continua f : Ω ⊂
+R2 → R. Un’immagine digitale è la sua discretizzazione in una matrice M × N . Nei
+formati specifici (es. medicali come DICOM, NIFTI), il file contiene una prima parte di
+metadati (es. info paziente) e una seconda parte con la matrice dei pixel.
+• Librerie Python: OpenCV (fast processing/vision), Matplotlib (visualizzazione),
+Pillow (fotoritocco), ImageIO (lettura/scrittura video e immagini).
+• Compressione: Lossless (ricostruzione esatta senza perdita) vs Lossy (perdita di
+informazioni, impossibile ricostruire l’originale).
+
+2
+
+Istogrammi, Rumore e Filtri Spaziali
+• Istogramma: Grafico della distribuzione dell’intensità dei pixel (Asse X: 0-255, Asse Y:
+numero pixel). Concentrato a sinistra = scuro; a destra = chiaro; a campana (normale) = bilanciato. Usato per preprocessing, contrasto, segmentazione basica (soglia) ed
+equalizzazione.
+• Rumore (Image Noise): Variazione casuale indesiderata nei pixel.
+– Non correlato: Gaussiano (additivo, media zero, xn = x + ϵ con ϵ ≃ N (0, σ)),
+Uniforme, Esponenziale, Impulsivo (Salt & Pepper) (pixel random a 0 o 1).
+– Correlato: Poisson (varianza dipende dall’intensità, tipico del medicale), Speckle
+(moltiplicativo, xn = x + x ∗ ϵ).
+• Linear Shift Invariant Systems (LSIS): Sistemi ottici ideali (es. le lenti si comportano
+come LSIS). Proprietà fondamentali:
+1. Linearità: αf1 + βf2 → αg1 + βg2 .
+2. Invarianza alla traslazione: f (x − a) → g(x − a).
+• Convoluzione 2D: Operatore matematico alla base dei filtri lineari spaziali. Unisce
+l’immagine f e un kernel quadrato di lato dispari h. Nota d’esame: Prima dell’applicazione,
+il kernel viene invertito due volte rispetto al centro. Per i bordi si può: ignorarli, settare a
+0 o ripetere i valori esterni.
+– Filtri Lineari: Unit Impulse (elemento neutro, restituisce l’input), Box filter
+(valore costante, satura/sfoca), Fuzzy/Gaussiano (smoothing regolare, decrescente
+dal centro).
+– Filtri Non Lineari: Median filter (ordina i pixel e prende la mediana; ottimo per il
+rumore Salt & Pepper ); Bilateral filter (kernel Gaussiano variabile per ogni pixel
+basato sul contesto dei vicini, preservando i contorni).
+2
+
+3
+
+Dominio delle Frequenze (Fourier)
+• Teoria di Fourier: Ogni funzione periodica è una combinazione lineare di sinusoidi. La
+Trasformata di Fourier (F (u)) mappa il segnale dal dominio dello spazio a quello della
+frequenza.
+• Rappresentazione Complessa (z = a + ib): La DFT genera numeri complessi per
+memorizzare due informazioni:
+√
+– Magnitudo (Ampiezza): |z| = a2 + b2 (indica quanto di una frequenza è presente;
+se modificata preservando la fase, la struttura geometrica rimane visibile).
+– Fase: ϕ = arctan(b/a) (indica dove è posizionata la frequenza, definendo la struttura/bordi).
+• Proprietà d’esame fondamentali:
+– Alte frequenze: Corrispondono ai contorni e ai bordi netti degli oggetti.
+– Teorema di Convoluzione: La convoluzione nello spazio spaziale equivale a un
+semplice prodotto algebrico punto a punto nel dominio di Fourier (F (u) · H(u)).
+Permette calcoli rapidissimi tramite FFT (complessità O(N log2 N )).
+– Filtraggio in frequenza:
+∗ Low-pass (Passa-basso): Elimina il rumore ad alta frequenza ma rende l’immagine
+sfocata. Per mitigare gli artefatti da risonanza del filtro ideale (oscillazioni), si
+usano transizioni graduali.
+∗ High-pass (Passa-alto): Rimuove le aree a luminosità costante mettendo in
+evidenza i bordi.
+
+4
+
+Imaging Computazionale e Problemi Inversi
+• Definizione: Sistemi di acquisizione in cui i dati misurati (y) non sono immagini dirette,
+ma misurazioni indirette o incomplete. Si stima l’oggetto incognito x invertendo il modello
+in avanti (forward model) F che descrive la fisica dello strumento:
+y = Fx + e
+
+(1)
+
+• Problema Diretto vs Inverso: Il problema diretto calcola l’effetto data la causa
+(orientamento causa-effetto, tipicamente con perdita di informazioni). Il problema inverso
+risale alle cause dati gli effetti.
+• Mal-condizionamento (Ill-posedness secondo Keller/Hadamard): Un problema si
+dice ben posto se la soluzione esiste, è unica e dipende con continuità dai dati. I problemi
+inversi lineari di imaging (Ax = y + e) sono mal posti perché la matrice di sistema A è
+mal condizionata:
+1. Se M = N (quadrata e non singolare): La soluzione esiste ed è unica, ma non
+è continua. Un piccolo rumore sui dati viene amplificato a dismisura, rendendo la
+naive solution fisicamente inaccettabile.
+2. Se M > N : Il sistema è sovradeterminato (nessuna soluzione); si risolve tramite i
+minimi quadrati: min ||Ax − (y + e)||22 .
+3. Se M < N : Il sistema è sottodeterminato (infinite soluzioni); si ricorre comunque ai
+minimi quadrati.
+
+3
+
+5
+
+Regolarizzazione (Model-Based e Iterativa)
+
+Per curare l’ill-posedness si cercano soluzioni approssimate inserendo informazioni a priori
+(vincoli fisici o regolarizzazioni).
+• Formulazione Unconstrained (Non vincolata):
+min d(Ax, y) + λR(x)
+x
+
+(2)
+
+– d(Ax, y): Termine di Data Fitting. Nel caso di rumore Gaussiano, si usa la norma
+2 al quadrato: ||Ax − y||22 .
+– λ: Parametro di regolarizzazione. Se troppo piccolo la soluzione resta rumorosa; se
+troppo grande, le caratteristiche del vincolo dominano distorcendo l’immagine.
+– R(x): Funzione di regolarizzazione che impone i vincoli sulla soluzione.
+• Tipologie di Regolarizzatori R(x):
+1. Norma 2 (Tichonov): R(x) = ||x||22 . Impone omogeneità (smoothness) rendendo
+il vettore uniforme. È strettamente convessa, risolvibile in modo esatto tramite le
+equazioni normali AT Ax = AT y con l’algoritmo CGLS. Limite: cancella il rumore
+ma sfoca i contorni degli oggetti.
+2. Norma 1 (Sparsificante): Impone che l’immagine sia rappresentabile con pochissimi
+componenti significativi non nulli. È una funzione convessa ma non derivabile nello
+zero. Spesso associata a vincoli di non negatività (x ≥ 0).
+3. Total Variation (TV): Applica la Norma 1 al Gradiente dell’immagine (∇f =
+∂f
+( ∂f
+∂x , ∂y )). Assume che le immagini siano costanti a tratti (zone omogenee divise da
+bordi netti). Poiché non è differenziabile nello zero ed è convessa, si approssima con un
+parametro liscio o si risolve tramite algoritmi di prossimità (es. Chambolle-Pock )
+senza calcolare il gradiente. Limite: induce l’effetto staircasing (immagini a blocchi
+artificiali).
+4. Norma p (0 < p < 1) e Norma 0: Impongono una sparsità estrema. Sono funzioni
+non convesse. Nota d’esame: Avendo molteplici minimi locali, l’algoritmo converge
+a una soluzione che dipende fortemente dalla scelta dell’iterato iniziale x0 .
+• Regolarizzazione Iterativa: Consiste nel risolvere il puro problema di data fit (min ||Ax−
+y||22 ) mediante un metodo iterativo e interrompere anticipatamente le iterazioni
+(early stopping) al punto minimo della curva di errore, sfruttando il fenomeno della
+semi-convergenza prima che il rumore esploda.
+• Scelta del parametro λ:
+– Principio di Discrepanza: Lavora a posteriori; richiede una stima del rumore e e
+seleziona la soluzione che eguaglia la discrepanza al livello di rumore stimato (semplice
+ma tende a sovrastimare).
+– Scelta Euristica: Metodo “trial and error” basato su simulazioni con dati noti; si
+traccia la curva dell’errore relativo rispetto a λ e si sceglie il punto di minimo.
+
+6
+
+Applicazioni Principali del Modulo 1
+
+6.1
+
+Image Deblur (Deconvoluzione)
+
+• Modello: y = K ∗x+e, dove K rappresenta la PSF (Point Spread Function), ovvero il
+kernel che descrive come il sistema ottico diffonde la luce di un singolo punto. Si assumono
+PSF Space Invariant (identiche su tutta l’immagine).
+4
+
+• Risoluzione in frequenza: Nel caso ideale senza rumore, la deconvoluzione è una
+semplice divisione punto a punto in Fourier: F ′ (u, v) = G(u, v)/H(u, v). In presenza di
+rumore, questa operazione amplifica a dismisura le alte frequenze distruggendo l’immagine;
+si rende perciò obbligatorio l’uso della regolarizzazione (Tichonov o TV).
+• Blind Deconvolution: Caso reale in cui la PSF K non è nota. Richiede la stima
+simultanea di kernel e immagine; i metodi model-based classici falliscono e oggi si usano
+quasi solo reti neurali.
+
+6.2
+
+Super Resolution (Risoluzione Spaziale)
+
+• Modello Inverso: yk = DBk x+nk , dove si combinano la sfocatura ottica (Bk ), l’operatore
+di Downsampling (D) che riduce la dimensione della matrice scartando dati, e il rumore
+stocastico (nk ).
+• Operatori di Downsampling (D): *Zero-padding* (agisce come selettore, estraendo
+un solo pixel per blocco e scartando gli altri) oppure *Media* (calcola la media aritmetica
+del blocco, modellando fedelmente i sensori fisici).
+• Tecniche di Interpolazione (Upscaling):
+– Nearest Neighbour: Replica semplicemente il valore del pixel più vicino. Molto veloce
+ma produce immagini pixelate/a blocchi senza aggiungere dettagli reali.
+– Bilineare: Media pesata dei 4 pixel più vicini tramite un polinomio di grado 1 applicato
+nelle due direzioni (x e poi y). Più fluida ma permane una leggera sfocatura.
+– Bicubica: Sfrutta un vicinato 4×4 (16 pixel) con polinomi cubici di grado 3. Garantisce
+immagini più nitide e contorni decisamente più definiti.
+
+6.3
+
+Tomografia Computerizzata a Raggi X (CT)
+
+• Principio: Imaging per sezioni trasversali (fette o slices) basato sui profili di attenuazione
+dei Raggi X legati alla densità dei tessuti.
+• Sinogramma: Insieme dei dati grezzi (raw data) registrati dai sensori lungo lo spazio
+del rilevatore t e l’angolo di rotazione θ. Viene campionato discretamente in punti ti e
+angoli θk . È affetto da due sorgenti di rumore: Poisson (Shot noise dovuto alla natura
+statistica dei fotoni della sorgente) e Gaussiano (White noise termico a media nulla
+dovuto all’elettronica dei detector).
+• Metodi di Ricostruzione Analitici:
+– Simple Back Projection (Retroproiezione semplice): Spalma i profili di attenuazione
+sulla griglia vuota. Genera un grave artefatto matematico intrinseco: una vistosa
+sfocatura a raggiera attorno all’oggetto.
+– Filtered Back Projection (FBP): Applica un filtro matematico (tipicamente un filtro
+passa-alto) ai profili nel dominio delle frequenze (Fourier) prima di retroproiettarli,
+eliminando le scie e definendo i bordi. Fallisce se i dati sono incompleti o degradati.
+• Protocolli di Sicurezza (ALARA) e Geometrie Incomplete: Per minimizzare la
+dose di radiazioni ionizzanti si ricorre a scansioni volutamente degradate:
+1. Low-dose CT: Mantiene la geometria completa ma riduce la potenza del raggio;
+la soluzione soffre di una forte instabilità dovuta all’amplificazione del rumore
+massiccio.
+5
+
+2. Sparse-view CT: Scansioni rade con un grande passo angolare; mancano equazioni nel
+sistema matematico determinando la non-unicità della soluzione (infinite immagini
+possibili), generando i cosiddetti streak artifacts (artefatti a striscia).
+3. Limited-angle CT / Tomosintesi: Copre solo un arco parziale senza completare il
+giro attorno al paziente. Provoca una gravissima distorsione geometrica dovuta al
+problema del cuneo di frequenze mancante (missing wedge problem), impedendo
+la ricostruzione dei bordi paralleli ai raggi mancanti.
+• CT como Problema Inverso Model-Based: Nei casi degradati sopra descritti si
+abbandona la FBP e si modella la CT come un gigantesco sistema algebrico lineare
+discretizzato Ax = m.
+– m: Vettore del sinogramma misurato.
+– x: Immagine vettorizzata in cui ogni cella rappresenta il coefficiente di attenuazione
+locale del voxel.
+– A: Matrice di sistema contenente i pesi geometrici dei raggi ai,j . I coefficienti si
+calcolano tramite due approcci:
+1. Ray driven: Si traccia il raggio matematico sorgente-pixel; il peso ai,j è il
+rapporto tra la lunghezza del segmento interno al voxel e la lunghezza totale del
+raggio.
+2. Pixel/Voxel driven: Si proietta il singolo voxel come un’ombra sul rilevatore; il
+peso si ottiene dividendo l’area dell’ombra proiettata per l’area totale del sensore.
+
+6
+
+7
+
+Modulo 2: Dai Problemi Inversi alle Neural Imaging Pipelines
+
+Il paradigma variazionale classico viene integrato, potenziato o sostituito dall’uso delle reti
+neurali profonde, che elaborano i dati strutturati in tensori.
+
+7.1
+
+1. Integrazione tra Ottimizzazione e Deep Learning
+
+Esistono diverse strategie per combinare la conoscenza fisica del problema (Forward Model K)
+con il Deep Learning:
+• Supervised Post-Processing (End-to-End): Si calcola prima una ricostruzione preliminare approssimata ed economica tramite un metodo classico (es. la naive solution
+invertendo K, oppure la FBP nella tomografia). Questa immagine grezza, tipicamente
+affetta da pesanti artefatti o rumore, viene passata in input a una rete neurale (es. U-Net)
+addestrata per mappare l’immagine corrotta nel corrispettivo Ground Truth pulito.
+• Plug-and-Play (PnP) Methods: Si basa su algoritmi di scomposizione della funzione
+obiettivo (es. ADMM o HQS - Half Quadratic Splitting). Questi algoritmi separano
+la minimizzazione in due sotto-problemi iterativi alternati:
+1. Data Fidelity Step: Risolve un passo di ottimizzazione classico legato alla coerenza
+dei dati (sfruttando l’operatore noto K).
+2. Prior Step (Proximal Operator): Matematicamente equivalente a un’operazione di
+**denoising**. Nei metodi PnP, questo operatore formale viene rimpiazzato direttamente da una rete neurale denoiser pre-addestrata (es. DnCNN). La convergenza
+matematica del ciclo completo non è sempre garantita ed è legata alla Lipschitzianità
+della rete.
+• Algorithm Unfolding (Unrolling): Consiste nel prendere un algoritmo di ottimizzazione iterativo classico (es. ISTA - Iterative Shrinkage-Thresholding Algorithm o
+**Gradient Descent**) troncato a un numero fisso T di iterazioni (es. T = 10). Ciascuna
+iterazione viene srotolata e mappata come se fosse un singolo strato (layer) di una rete
+neurale profonda. I parametri dell’algoritmo (come il passo di discesa α o le soglie di
+sparsità) diventano parametri computazionali appresi tramite backpropagation durante
+l’addestramento. Vantaggio: unisce l’esplicita coerenza fisica del modello alla flessibilità
+dei dati.
+
+7.2
+
+2. Ricostruzione non Supervisionata (Unsupervised e Self-Supervised)
+
+Quando non si dispone di un dataset di immagini Ground Truth (immagini perfettamente pulite,
+frequente in campo medico), si ricorre a strategie alternative:
+• Self-Supervised Learning (es. Noise2Noise): Dimostra matematicamente che è
+possibile addestrare una rete neurale a denoisare immagini disponendo soltanto di coppie
+di acquisizioni diverse della *stessa* scena, entrambe corrotte da rumore indipendente
+a media nulla. La rete, non potendo prevedere la componente casuale e incoerente del
+rumore, converge sul target comune pulito (la media statistica).
+• Deep Image Prior (DIP): Approccio radicalmente diverso: non richiede alcun
+dataset di addestramento. Si usa una rete neurale convoluzionale (CNN) generativa Gθ
+per ricostruire una *singola* specifica immagine. L’input della rete è un vettore di rumore
+fisso z. L’ottimizzazione avviene ottimizzando i pesi θ della rete stessa per minimizzare la
+discrepanza con i dati misurati:
+min ||K(Gθ (z)) − y||22
+θ
+
+7
+
+(3)
+
+Il principio cardine (Prior Implicito) si basa sul fatto che le CNN sono spettralmente
+inclinate: preferiscono apprendere e ricostruire prima le strutture coerenti e a bassa
+frequenza (le forme reali dell’immagine) e solo dopo molte iterazioni memorizzano le alte
+frequenze caotiche (il rumore). Interrompendo anticipatamente l’ottimizzazione dei pesi
+(early stopping), si ottiene l’immagine pulita.
+
+7.3
+
+3. Implicit Neural Representations (INR) e NeRF
+
+Un cambio di paradigma nella rappresentazione digitale:
+• INR: Invece di memorizzare un’immagine come una matrice discreta di pixel, la scena
+viene modellata come una funzione continua implementata da un perceptrone multistrato
+(MLP) fθ . La rete prende in input le coordinate spaziali continua (x, y) (e possibilmente
+temporali t) e restituisce in output il valore di intensità o colore del pixel.
+• NeRF (Neural Radiance Fields): Estensione delle INR alla ricostruzione 3D a partire
+da immagini 2D scattate da diverse angolazioni conosciute. Un MLP mappa una coordinata
+3D e una direzione di vista (x, y, z, θ, ϕ) in una densità volumetrica σ e un colore RGB.
+L’immagine 2D finale si ottiene tramite l’operatore fisico differenziabile di Volume Rendering applicato lungo i raggi ottici. L’addestramento ottimizza i pesi del MLP confrontando
+i pixel renderizzati con quelli delle foto reali. Per catturare i dettagli ad alta frequenza
+(evitando che la rete produca immagini troppo sfuocate), è indispensabile mappare l’input
+spaziale in uno spazio a frequenza più alta tramite il Positional Encoding prima di
+passarlo al MLP.
+
+7.4
+
+4. Generative Imaging via Score-Based e Diffusion Models
+
+Rappresentano lo stato dell’arte per campionare immagini dalla distribuzione a priori (*Prior*
+Bayesiano) e risolvere problemi inversi.
+• Forward Process (Noising): Un’immagine pulita x0 viene progressivamente distrutta
+aggiungendo rumore Gaussiano su T passi discreti (o tramite un’equazione differenziale
+stocastica SDE continua), fino a trasformarla completamente in rumore bianco xT .
+Reverse Process (Denoising): Una rete neurale (tipicamente una U-Net) viene addestrata a stimare il rumore aggiunto a ogni passo, permettendo di invertire il processo
+partendo dal rumore puro per generare un’immagine realistica.
+• Risoluzione di Problemi Inversi via Modelli di Diffusione: Per condizionare la
+generazione in modo che l’immagine finale sia coerente con le nostre misurazioni reali
+y (es. un sinogramma o un’immagine sfocata), si interviene durante la traiettoria di
+campionamento inverso modificando ogni iterato xt :
+1. Diffusion Posterior Sampling (DPS): Ad ogni passo della diffusione, si calcola
+il gradiente del termine di data fidelity ||K(xt ) − y||22 rispetto allo stato corrente xt .
+Questo gradiente viene sommato alla stima del denoiser per direzionare attivamente
+la traiettoria verso la coerenza con i dati misurati.
+2. DiffPIR (Diffusion Plug-and-Play): Alterna esplicitamente un passo standard di
+denoising affidato alla rete di diffusione pre-addestrata e un passo di ottimizzazione
+variazionale classico per far quadrare i dati con il modello K.
+• Trade-off e Limitazioni Critiche d’Esame: I modelli di diffusione sono generatori
+potentissimi ma presentano rischi strutturali: se il passaggio di denoising è troppo dominante, la rete può **allucinare** dettagli visivi estremamente realistici e convincenti,
+8
+
+ma fisicamente **falsi o errati** (pericolo assoluto in campo medico). Se il passaggio di
+coerenza dei dati è invece troppo marcato, la ricostruzione può esibire artefatti oscillatori o
+eccessivamente levigati (oversmoothed ). La valutazione quantitativa rigorosa della coerenza
+dei dati resta quindi imprescindibile.
+
+8
+
+Metriche di Valutazione delle Immagini
+Tabella 1: Confronto delle Metriche di Valutazione di Output
+
+Metrica
+
+Caratteristiche Principali
+P
+GT 2
+M SE = N1 N
+i=1 (xi − xi )
+Più è basso, migliore è l’immagine.
+
+
+2
+P SN R = 10 log10 max(x)
+M SE
+
+Molto semplice; bassa correlazione con la
+qualità visiva; sensibile alla scala.
+
+Più è alto, migliore è l’immagine.
+
+di confronto perché indipendente dalla scala.
+
+SSIM
+
+Non ha una formula elementare.
+Sensibile a contrasto e struttura.
+
+Altamente informativo; fortemente correlato
+con l’ispezione visiva umana.
+
+CNR
+
+Specifico per l’imaging medico.
+
+Misura il rapporto contrasto-rumore nelle regioni d’interesse
+
+MSE
+PSNR
+
+Limiti / Vantaggi
+
+Espresso in dB (ottimo ≈ 30–40 dB). Standard
+
+Riferimenti bibliografici
+[1] Appunti di Teoria, Sottoinsiemi di Computer Vision, Modulo 1.
+[2] Documentazione sulle Immagini Digitali, Rappresentazione Continua e Discreta.
+[3] Analisi del Rumore, Modelli Statistici di Noise nelle Immagini.
+[4] Teoria dei Sistemi, Linear Shift Invariant Systems (LSIS).
+[5] Piccolomini, Definizione di Computational Imaging e Problemi Inversi.
+[6] Keller, Definizione e Proprietà dei Problemi Inversi.
+[7] Tichonov, Metodi di Regolarizzazione Classica e Ottimizzazione Convessa.
+[8] Chambolle-Pock, Algoritmi di Prossimità per la Total Variation.
+[9] Teoria della TAC, Dalla Retroproiezione alla Filtered Back Projection (FBP).
+[10] Appunti Modulo 2, Metodi Plug-and-Play e Deep Image Prior per Problemi Inversi.
+[11] Modelli Generativi, SDE e Scomposizione Posteriore nei Modelli di Diffusione.
+
+9
+
+
