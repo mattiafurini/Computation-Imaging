@@ -137,8 +137,8 @@ style: |
 ## A Comparative Analysis
 
 **Computational Imaging - Group I**
-Mattia Furini - 00000000
-Samir - 00000
+Mohamed Samir Haffoudhi - mohamed.haffoudhi@studio.unibo.it - 0001242845
+Mattia Furini - mattia.furini@studio.unibo.it - 0001233051
 
 ---
 
@@ -158,9 +158,9 @@ Samir - 00000
 
 We compare three distinct approaches using different *priors*:
 
-1. **End-to-End Learning (UNet):** Supervised mapping from $y$ to $x$.
-2. **Variational Method (Total Variation):** Optimization enforcing gradient sparsity.
-3. **Generative Model (DiffPIR):** Diffusion model as a generative prior for hallucinating details.
+1. **Supervised Post-Processing (UNet):** End-to-end mapping from corrupted images to Ground Truth.
+2. **Total Variation (TV):** Variational optimization using the L1 norm on the image gradient.
+3. **Diffusion Plug-and-Play (DiffPIR):** Alternates diffusion denoising with a variational step for data fidelity.
 
 ---
 
@@ -213,7 +213,7 @@ We compare three distinct approaches using different *priors*:
 
 | Method | PSNR / SSIM |
 | :--- | :---: |
-| **UNet** | **27.20 / 0.8765** |
+| **UNet** | **26.94 / 0.8732** |
 | **TV** | 24.28 / 0.7183 |
 | **DiffPIR**| 24.00 / 0.7389 |
 
@@ -237,7 +237,7 @@ We compare three distinct approaches using different *priors*:
 
 | Method | PSNR / SSIM |
 | :--- | :---: |
-| **UNet** | **26.99 / 0.8609** |
+| **UNet** | **26.77 / 0.8617** |
 | **TV** | 24.27 / 0.7179 |
 | **DiffPIR**| 23.96 / 0.7331 |
 
@@ -261,8 +261,8 @@ We compare three distinct approaches using different *priors*:
 
 | Method | PSNR / SSIM |
 | :--- | :---: |
-| **UNet** | 22.21 / **0.6475** |
-| **TV** | **22.26** / 0.6205 |
+| **UNet** | **23.14 / 0.7003** |
+| **TV** | 22.26 / 0.6205 |
 | **DiffPIR**| 20.85 / 0.5318 |
 
 </div>
@@ -285,8 +285,8 @@ We compare three distinct approaches using different *priors*:
 
 | Method | PSNR / SSIM |
 | :--- | :---: |
-| **UNet** | 22.17 / **0.6381** |
-| **TV** | **22.24** / 0.6196 |
+| **UNet** | **23.08 / 0.6913** |
+| **TV** | 22.24 / 0.6196 |
 | **DiffPIR**| 20.83 / 0.5274 |
 
 </div>
@@ -301,14 +301,15 @@ We compare three distinct approaches using different *priors*:
 
 ---
 
-## UNet Limitations: Over-smoothing & OOD
+## UNet: Robustness vs Over-smoothing
 
 <div class="twocolumns">
 
 <div>
 
-* **OOD Failure:** Fails dramatically on data or degradations not seen during training.
-* **Over-smoothing:** Averages out high-frequency details, causing natural textures to look artificially flat.
+* **Robustness:** Successfully handles multiple levels of degradation.
+* **Over-smoothing:** Causes natural textures to look artificially flat compared to generative methods.
+* **Generalization:** Struggles to reconstruct images outside its specific training distribution (OOD data).
 
 </div>
 
@@ -366,7 +367,7 @@ We compare three distinct approaches using different *priors*:
 
 ## Conclusions
 
-* **UNet:** Ideal for mathematical accuracy and speed; lacks structural robustness.
+* **UNet:** Excellent metric performance across all degradations and fast inference, but outputs lack high-frequency photorealistic details.
 * **TV:** Solid mathematical guarantees; unsuitable for natural textures.
 * **DiffPIR:** Recreates highly realistic images, but produces hallucinations and artifacts under severe degradation.
 
