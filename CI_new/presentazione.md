@@ -140,6 +140,8 @@ style: |
 Mohamed Samir Haffoudhi - mohamed.haffoudhi@studio.unibo.it - 0001242845
 Mattia Furini - mattia.furini@studio.unibo.it - 0001233051
 
+**GitHub Repo:** [Computational-Imaging-Group-I](https://github.com/Samirhff1/Computational-Imaging-Group-I-Project-Template.git)
+
 ---
 
 ## The Inverse Problem: Super-Resolution
@@ -375,4 +377,3 @@ We compare three distinct approaches using different *priors*:
 
 # Thank you!
 
-*Code available on GitHub*
